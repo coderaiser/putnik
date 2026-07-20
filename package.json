@@ -2,7 +2,7 @@
   "name": "putnik",
   "version": "1.0.0",
   "type": "module",
-  "description": "CLI tool to run multiple npm-scripts fast",
+  "description": "parse JavaScript to SQL",
   "main": "lib/putnik.js",
   "scripts": {
     "lint": "madrun lint",
