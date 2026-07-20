@@ -9,6 +9,8 @@
 [CoverageURL]: https://coveralls.io/github/coderaiser/putnik?branch=master
 [CoverageIMGURL]: https://coveralls.io/repos/coderaiser/putnik/badge.svg?branch=master&service=github
 
+<img width="3024" height="4032" alt="IMG_5196" src="https://github.com/user-attachments/assets/cd6da7ce-d1b8-42b2-8a3a-8f430b838427" />
+
 > Babel AST stored in SQL, transformed by plugins, printed back to code.
 
 `putnik` is a code transformation engine built on top of [putout](https://github.com/coderaiser/putout). Instead of traversing the AST in memory with Babel, it writes the AST into a SQLite (or Postgres) database, runs SQL-aware plugins against it, then reads the AST back and prints it with `@putout/printer`.
