@@ -13,7 +13,7 @@
 
 > Babel AST stored in SQL, transformed by plugins, printed back to code.
 
-`putnik` is a code transformation engine built on top of [putout](https://github.com/coderaiser/putout). Instead of traversing the AST in memory with Babel, it writes the AST into a SQLite (or Postgres) database, runs SQL-aware plugins against it, then reads the AST back and prints it with `@putout/printer`.
+`putnik` is a code transformation engine built on top of 🐊[**Putout**](https://github.com/coderaiser/putout). Instead of traversing the AST in memory with Babel, it writes the AST into a SQLite (or Postgres) database, runs SQL-aware plugins against it, then reads the AST back and prints it with `@putout/printer`.
 
 The key idea: **SQL indexes beat Babel traverse at scale**. A plugin that finds `DebuggerStatement` nodes does not visit every node in the file — it queries one table with one index hit.
 
