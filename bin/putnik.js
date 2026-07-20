@@ -1,5 +1,9 @@
-import {createPutnik} from '../lib/putnik.js';
-import {pluginConstToLet} from '../lib/plugins/const-to-let.js';
+import {createPutnik, loadSqlPlugin} from '../lib/putnik.js';
+import {fileURLToPath} from 'node:url';
+import {dirname, resolve} from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pluginConstToLet = loadSqlPlugin(resolve(__dirname, '../lib/plugins/const-to-let.sql'));
 
 const putnik = createPutnik();
 
@@ -10,3 +14,4 @@ const plugins = [pluginConstToLet];
 const places = putnik.run('src/index.js', plugins);
 
 console.log(places);
+

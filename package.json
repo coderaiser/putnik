@@ -41,6 +41,7 @@
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "montag": "^2.0.1",
+    "node-sql-parser": "^5.4.0",
     "putout": "^42.10.0"
   },
   "devDependencies": {
