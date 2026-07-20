@@ -10,7 +10,7 @@ export default {
     'fresh:lint': () => run('lint', '--fresh'),
     'lint:fresh': () => run('lint', '--fresh'),
     'fix:lint': () => run('lint', '--fix'),
-    'test': () => [env, 'tape test/**/*.js'],
+    'test': () => [env, 'tape lib/**/*.spec.js'],
     'watch:test': async () => [env, await run('watcher', await cutEnv('test'))],
     'watch:tape': () => 'nodemon -w test -w lib --exec tape',
     'watch:coverage:base': async () => [env, await run('watcher', `nyc ${await cutEnv('test')}`)],
