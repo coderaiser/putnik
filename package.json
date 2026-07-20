@@ -6,6 +6,8 @@
   "main": "lib/putnik.js",
   "scripts": {
     "lint": "madrun lint",
+    "fresh:lint": "madrun fresh:lint",
+    "lint:fresh": "madrun lint:fresh",
     "fix:lint": "madrun fix:lint",
     "test": "madrun test",
     "watch:test": "madrun watch:test",
@@ -15,8 +17,7 @@
     "watch:coverage": "madrun watch:coverage",
     "watcher": "madrun watcher",
     "coverage": "madrun coverage",
-    "report": "madrun report",
-    "postpublish": "madrun postpublish"
+    "report": "madrun report"
   },
   "repository": {
     "type": "git",
