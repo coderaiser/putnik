@@ -3,10 +3,9 @@
 *.config.*
 *.log
 *.lock
+*.spec.*
 
 .*
-
-redrun.ai
 
 test
 coverage

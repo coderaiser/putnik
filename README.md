@@ -26,7 +26,7 @@ npm i putnik
 ## Install
 
 ```sh
-npm i putnik better-sqlite3 @babel/parser @putout/printer
+npm i putnik better-sqlite3 @putout/babel @putout/printer
 ```
 
 `package.json` must have `"type": "module"`.
@@ -83,7 +83,7 @@ Returns `{ parse, run, getAst, print, db }`.
 
 ### `parse(file, source)` — write AST to DB
 
-Parses source with `@babel/parser` and inserts every node into its typed table. Called once per file before `run`.
+Parses source with `@putout/babel` and inserts every node into its typed table. Called once per file before `run`.
 
 ```js
 putnik.parse('src/index.js', 'const a = 1;');
@@ -228,7 +228,6 @@ SELECT * FROM file_nodes WHERE file = 'src/index.js'
 |--------|----------------------------|------------|
 | select | returns places (lint)      | no         |
 | fix    | mutates DB, returns places | yes        |
-
 
 ## Cross-file transform
 
