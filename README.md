@@ -31,18 +31,6 @@ npm i putnik better-sqlite3 @babel/parser @putout/printer
 
 `package.json` must have `"type": "module"`.
 
-***
-
-## Entry point
-
-```
-putnik.js
-```
-
-One file. All layers are exported individually so each can be unit-tested with `supertape` in isolation.
-
-***
-
 ## Usage
 
 ```js
@@ -228,25 +216,11 @@ const pluginFindUnusedExports = {
 
 Use the `sql` tagged template for editor SQL highlighting. Raw SQL plugins can `JOIN` across tables and across files — impossible with Babel traverse.
 
-***
-
-## Schema
-
-```
-Program                          (parent_field: 'program')
-└── VariableDeclaration          (parent_field: 'body',         kind: 'const')
-     └── VariableDeclarator      (parent_field: 'declarations')
-          ├── Identifier         (parent_field: 'id',           name: 'a')
-          └── NumericLiteral     (parent_field: 'init',         value: 1)
-```
-
 All nodes live in per-type tables. The `file_nodes` view unions them for single-query print:
 
 ```sql
 SELECT * FROM file_nodes WHERE file = 'src/index.js'
 ```
-
-***
 
 ## Two modes
 
@@ -255,13 +229,6 @@ SELECT * FROM file_nodes WHERE file = 'src/index.js'
 | select | returns places (lint)      | no         |
 | fix    | mutates DB, returns places | yes        |
 
-***
-
-## Testing
-
-Each layer is exported individually and tested with supertape — see `lib/*.spec.js`.
-
-***
 
 ## Cross-file transform
 
@@ -295,25 +262,6 @@ const plugin = {
 
 const places = putnik.run(null, [plugin]);
 ```
-
-***
-
-## Layers
-
-```
-createPutnik          public API — parse, run, getAst, print
-    createDb          SQLite adapter (swap for postgres)
-    createAllTables   per-type tables + file indexes
-    createView        UNION ALL view for single-query print
-    writeAst          @babel/parser → INSERT rows
-    readAst           one JOIN query → assemble tree in memory
-    runPlugin         fetch rows → visit sync → collect plan
-    createNode        Proxy — captures mutations into plan
-    applyPlan         execute plan in one transaction
-    print             readAst → @putout/printer → source string
-```
-
-Each layer is a pure function of `db` — import and test individually with `supertape`.
 
 ## License
 
