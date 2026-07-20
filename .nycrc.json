@@ -4,6 +4,7 @@
     "all": true,
     "exclude": [
         "**/*.config.*",
+        "**/*.spec.js",
         ".*",
         "bin",
         "test"
