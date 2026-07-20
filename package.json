@@ -1,0 +1,58 @@
+{
+  "name": "putnik",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CLI tool to run multiple npm-scripts fast",
+  "main": "lib/putnik.js",
+  "scripts": {
+    "lint": "madrun lint",
+    "fix:lint": "madrun fix:lint",
+    "test": "madrun test",
+    "watch:test": "madrun watch:test",
+    "watch:tape": "madrun watch:tape",
+    "watch:coverage:base": "madrun watch:coverage:base",
+    "watch:coverage:tape": "madrun watch:coverage:tape",
+    "watch:coverage": "madrun watch:coverage",
+    "watcher": "madrun watcher",
+    "coverage": "madrun coverage",
+    "report": "madrun report",
+    "postpublish": "madrun postpublish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coderaiser/putnik.git"
+  },
+  "keywords": [
+    "ast",
+    "sql",
+    "putout",
+    "babel",
+    "javascript"
+  ],
+  "author": "coderaiser <mnemonic.enemy@gmail.com> (http://coderaiser.github.io/)",
+  "bugs": {
+    "url": "https://github.com/coderaiser/putnik/issues"
+  },
+  "homepage": "https://github.com/coderaiser/putnik",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "montag": "^2.0.1",
+    "putout": "^42.10.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.0.2",
+    "eslint-plugin-putout": "^31.0.2",
+    "madrun": "^13.0.4",
+    "nodemon": "^3.0.1",
+    "npm-run-all": "^4.0.0",
+    "superc8": "^12.1.3",
+    "supertape": "^13.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

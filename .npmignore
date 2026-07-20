@@ -1,0 +1,14 @@
+*.png
+*.md
+*.config.*
+*.log
+*.lock
+
+.*
+
+redrun.ai
+
+test
+coverage
+
+!README.md
