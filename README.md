@@ -9,7 +9,8 @@
 [CoverageURL]: https://coveralls.io/github/coderaiser/putnik?branch=master
 [CoverageIMGURL]: https://coveralls.io/repos/coderaiser/putnik/badge.svg?branch=master&service=github
 
-<img width="3024" height="4032" alt="IMG_5196" src="https://github.com/user-attachments/assets/cd6da7ce-d1b8-42b2-8a3a-8f430b838427" />
+
+<img width="2609" height="3434" alt="IMG_5196 2" src="https://github.com/user-attachments/assets/4cb07347-9585-4c20-a259-e82cdf7a7025" />
 
 > Babel AST stored in SQL, transformed by plugins, printed back to code.
 
