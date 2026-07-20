@@ -37,15 +37,17 @@ putnik.parse('src/index.js', 'const a = 1;');
 const constPlugin = {
     select: `SELECT id FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
     report: `SELECT 'Prefer let over const' AS message, start_line AS line, start_col AS col FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
-    fix:    `UPDATE VariableDeclaration SET kind = 'let' WHERE file = :file AND kind = 'const'`,
+    fix: `UPDATE VariableDeclaration SET kind = 'let' WHERE file = :file AND kind = 'const'`,
 };
 
 // report mode — returns places, does not mutate
 const places = putnik.run('src/index.js', [constPlugin]);
-// [{message: 'Prefer let over const', line: 1, col: 0}]
 
+// [{message: 'Prefer let over const', line: 1, col: 0}]
 // fix mode — mutates the DB
-putnik.run('src/index.js', [constPlugin], {fix: true});
+putnik.run('src/index.js', [constPlugin], {
+    fix: true,
+});
 
 // read back and print
 console.log(putnik.print('src/index.js'));
@@ -60,16 +62,18 @@ console.log(putnik.print('src/index.js'));
 import {createPutnik} from 'putnik';
 
 const inMemoryPutnik = createPutnik();
-const persistentPutnik = createPutnik({connection: '.putnik.db'});
+const persistentPutnik = createPutnik({
+    connection: '.putnik.db',
+});
 ```
 
 Returns `{ parse, run, getAst, print, db }`.
 
-| option       | default      | description                         |
-|--------------|--------------|-------------------------------------|
+| option       | default      | description                          |
+|--------------|--------------|--------------------------------------|
 | `connection` | `':memory:'` | path to SQLite file, or `':memory:'` |
 
----
+***
 
 ### `parse(file, source)`
 
@@ -81,20 +85,20 @@ putnik.parse('src/index.js', 'const a = 1;');
 
 Each Babel node type gets its own table. Every row shares these base columns:
 
-| column       | type    | description                                     |
-|--------------|---------|-------------------------------------------------|
-| id           | INTEGER | primary key                                     |
-| file         | TEXT    | source file path                                |
-| parent_id    | INTEGER | id of the parent node                           |
-| parent_field | TEXT    | field name on parent (`id`, `init`, `body`, …)  |
-| start_line   | INT     | location                                        |
-| start_col    | INT     | location                                        |
-| end_line     | INT     | location                                        |
-| end_col      | INT     | location                                        |
+| column       | type    | description                                    |
+|--------------|---------|------------------------------------------------|
+| id           | INTEGER | primary key                                    |
+| file         | TEXT    | source file path                               |
+| parent_id    | INTEGER | id of the parent node                          |
+| parent_field | TEXT    | field name on parent (`id`, `init`, `body`, …) |
+| start_line   | INT     | location                                       |
+| start_col    | INT     | location                                       |
+| end_line     | INT     | location                                       |
+| end_col      | INT     | location                                       |
 
 Type-specific columns: `kind` on `VariableDeclaration`, `name` on `Identifier`, `value` on `StringLiteral` and `NumericLiteral`.
 
----
+***
 
 ### `run(file, plugins, opts?)`
 
@@ -103,16 +107,22 @@ Type-specific columns: `kind` on `VariableDeclaration`, `name` on `Identifier`, 
 const places = putnik.run('src/index.js', [plugin]);
 
 // fix mode — mutates the DB
-putnik.run('src/index.js', [plugin], {fix: true});
+putnik.run('src/index.js', [plugin], {
+    fix: true,
+});
 ```
 
 Returns an array of place objects:
 
 ```js
-[{message: 'Prefer let over const', line: 1, col: 0}]
+[{
+    message: 'Prefer let over const',
+    line: 1,
+    col: 0,
+}];
 ```
 
----
+***
 
 ### `print(file)`
 
@@ -147,11 +157,9 @@ A plugin is a plain object with three SQL strings:
 const constPlugin = {
     // which rows to match
     select: `SELECT id FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
-
     // what to report (must return message, line, col)
     report: `SELECT 'Prefer let over const' AS message, start_line AS line, start_col AS col
              FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
-
     // how to fix (only run when fix: true)
     fix: `UPDATE VariableDeclaration SET kind = 'let' WHERE file = :file AND kind = 'const'`,
 };
@@ -162,12 +170,10 @@ Plugins can also be loaded from `.sql` files using tagged sections:
 ```sql
 -- @select
 SELECT id FROM VariableDeclaration WHERE file = :file AND kind = 'const';
-
 -- @report
 SELECT 'Prefer let over const' AS message,
        start_line AS line, start_col AS col
 FROM VariableDeclaration WHERE file = :file AND kind = 'const';
-
 -- @fix
 UPDATE VariableDeclaration SET kind = 'let'
 WHERE file = :file AND kind = 'const';
@@ -209,9 +215,9 @@ createIndexForField(db, 'VariableDeclaration', 'kind');
 
 ## Modes
 
-| mode   | DB mutated | return value                    |
-|--------|------------|---------------------------------|
-| report | no         | array of `{message, line, col}` |
+| mode   | DB mutated | return value                                   |
+|--------|------------|------------------------------------------------|
+| report | no         | array of `{message, line, col}`                |
 | fix    | yes        | array of `{message, line, col}` after mutation |
 
 ## Cross-file transforms
@@ -222,7 +228,9 @@ Because all files share one DB, a plugin can query across the whole project:
 import {readFileSync} from 'node:fs';
 import {createPutnik} from 'putnik';
 
-const putnik = createPutnik({connection: '.putnik.db'});
+const putnik = createPutnik({
+    connection: '.putnik.db',
+});
 
 for (const file of files)
     putnik.parse(file, readFileSync(file, 'utf8'));
