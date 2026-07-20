@@ -13,20 +13,14 @@
 
 > Babel AST stored in SQL, transformed by plugins, printed back to code.
 
-`putnik` is a code transformation engine built on top of 🐊[**Putout**](https://github.com/coderaiser/putout). Instead of traversing the AST in memory with Babel, it writes the AST into a SQLite (or Postgres) database, runs SQL-aware plugins against it, then reads the AST back and prints it with `@putout/printer`.
+`putnik` is a code transformation engine built on top of 🐊[**Putout**](https://github.com/coderaiser/putout). Instead of traversing the AST in memory with Babel, it writes the AST into a SQLite database, runs SQL-aware plugins against it, then reads the AST back and prints it with `@putout/printer`.
 
 The key idea: **SQL indexes beat Babel traverse at scale**. A plugin that finds `DebuggerStatement` nodes does not visit every node in the file — it queries one table with one index hit.
 
 ## Install
 
-```
-npm i putnik
-```
-
-## Install
-
 ```sh
-npm i putnik better-sqlite3 @putout/babel @putout/printer
+npm i putnik
 ```
 
 `package.json` must have `"type": "module"`.
@@ -34,232 +28,218 @@ npm i putnik better-sqlite3 @putout/babel @putout/printer
 ## Usage
 
 ```js
-import {createPutnik} from './putnik.js';
+import {createPutnik} from 'putnik';
 
 const putnik = createPutnik();
 
 putnik.parse('src/index.js', 'const a = 1;');
 
-const plugin = {
-    message: 'Prefer let over const',
-    include: () => [
-        'VariableDeclaration',
-    ],
-    fix(node) {
-        node.kind = 'let';
-    },
+const constPlugin = {
+    select: `SELECT id FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
+    report: `SELECT 'Prefer let over const' AS message, start_line AS line, start_col AS col FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
+    fix:    `UPDATE VariableDeclaration SET kind = 'let' WHERE file = :file AND kind = 'const'`,
 };
 
-// select mode — report only
-const places = putnik.run('src/index.js', [plugin]);
+// report mode — returns places, does not mutate
+const places = putnik.run('src/index.js', [constPlugin]);
+// [{message: 'Prefer let over const', line: 1, col: 0}]
 
-// [{rule, message, position: {line, column}}]
-// fix mode — mutate db
-putnik.run('src/index.js', [plugin], {
-    fix: true,
-});
+// fix mode — mutates the DB
+putnik.run('src/index.js', [constPlugin], {fix: true});
 
 // read back and print
 console.log(putnik.print('src/index.js'));
 // let a = 1;
 ```
 
-***
+## API
 
-## Main parts
-
-### `createPutnik(options?)` — public API
+### `createPutnik(options?)`
 
 ```js
-import {createPutnik} from './putnik.js';
+import {createPutnik} from 'putnik';
 
 const inMemoryPutnik = createPutnik();
-const sqlitePutnik = createPutnik({
-    connection: '.putnik.db',
-});
+const persistentPutnik = createPutnik({connection: '.putnik.db'});
 ```
 
 Returns `{ parse, run, getAst, print, db }`.
 
-### `parse(file, source)` — write AST to DB
+| option       | default      | description                         |
+|--------------|--------------|-------------------------------------|
+| `connection` | `':memory:'` | path to SQLite file, or `':memory:'` |
 
-Parses source with `@putout/babel` and inserts every node into its typed table. Called once per file before `run`.
+---
+
+### `parse(file, source)`
+
+Parses `source` with `@putout/babel` and writes every AST node into its typed table. Call once per file before `run`.
 
 ```js
 putnik.parse('src/index.js', 'const a = 1;');
 ```
 
-Each Babel node type gets its own table. Every row shares base columns:
+Each Babel node type gets its own table. Every row shares these base columns:
 
-| column       | type    | description                                    |
-|--------------|---------|------------------------------------------------|
-| id           | INTEGER | primary key, auto-increment                    |
-| file         | TEXT    | source file path                               |
-| parent_id    | INTEGER | id of parent node                              |
-| parent_field | TEXT    | field name on parent (`id`, `init`, `body`, …) |
-| start_line   | INT     | location                                       |
-| start_col    | INT     | location                                       |
-| end_line     | INT     | location                                       |
-| end_col      | INT     | location                                       |
+| column       | type    | description                                     |
+|--------------|---------|-------------------------------------------------|
+| id           | INTEGER | primary key                                     |
+| file         | TEXT    | source file path                                |
+| parent_id    | INTEGER | id of the parent node                           |
+| parent_field | TEXT    | field name on parent (`id`, `init`, `body`, …)  |
+| start_line   | INT     | location                                        |
+| start_col    | INT     | location                                        |
+| end_line     | INT     | location                                        |
+| end_col      | INT     | location                                        |
 
-Plus type-specific columns: `kind` on `VariableDeclaration`, `name` on `Identifier`, `value` on `StringLiteral` and `NumericLiteral`.
+Type-specific columns: `kind` on `VariableDeclaration`, `name` on `Identifier`, `value` on `StringLiteral` and `NumericLiteral`.
 
-### `run(file, plugins, opts?)` — run plugins
+---
+
+### `run(file, plugins, opts?)`
 
 ```js
-// select mode — report only, db not mutated
+// report mode — does not mutate the DB
 const places = putnik.run('src/index.js', [plugin]);
 
-// fix mode — mutates db
-putnik.run('src/index.js', [plugin], {
-    fix: true,
-});
+// fix mode — mutates the DB
+putnik.run('src/index.js', [plugin], {fix: true});
 ```
 
-Returns an array of places:
+Returns an array of place objects:
 
 ```js
-[{
-    rule: 'Prefer let over const',
-    message: 'Prefer let over const',
-    position: {
-        line: 1,
-        column: 0,
-    },
-}];
+[{message: 'Prefer let over const', line: 1, col: 0}]
 ```
 
-***
+---
 
-### `print(file)` — read AST from DB and print
+### `print(file)`
 
-Fetches all nodes for the file in one SQL query, assembles the tree in memory, and passes it to `@putout/printer`.
+Reads all nodes for `file` from the DB, assembles the AST, and returns the printed source string via `@putout/printer`. Returns `''` if the file has not been parsed.
 
 ```js
 const code = putnik.print('src/index.js');
 // 'let a = 1;\n'
 ```
 
-***
+### `getAst(file)`
 
-### `getAst(file)` — read AST as a JS object
-
-Same as `print` but returns the raw AST object instead of printing it. Useful for passing to other putout tools.
+Same as `print` but returns the raw AST object instead of printing it.
 
 ```js
 const ast = putnik.getAst('src/index.js');
 ```
 
+### `sql` tagged template
+
+```js
+import {sql} from 'putnik';
+
+const query = sql`SELECT id FROM VariableDeclaration WHERE file = ${file}`;
+```
+
 ## Plugin shape
 
-### `include` + `fix` — simple transform
+A plugin is a plain object with three SQL strings:
 
 ```js
-const pluginConstToLet = {
-    message: 'Prefer let over const',
-    
-    include: () => [
-        'VariableDeclaration',
-    ],
-    
-    fix(node) {
-        node.kind = 'let';
-    },
+const constPlugin = {
+    // which rows to match
+    select: `SELECT id FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
+
+    // what to report (must return message, line, col)
+    report: `SELECT 'Prefer let over const' AS message, start_line AS line, start_col AS col
+             FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
+
+    // how to fix (only run when fix: true)
+    fix: `UPDATE VariableDeclaration SET kind = 'let' WHERE file = :file AND kind = 'const'`,
 };
 ```
 
-`include` returns the node types to fetch. The runner queries each type table, hands each row to `fix` as a proxied node. Mutations are collected into a plan and written to the DB in one transaction.
-
-### Node factories — replace a node with a different type
-
-```js
-import {createPutnik, StringLiteral} from './putnik.js';
-
-const pluginNumericToString = {
-    message: 'Replace numeric init with string',
-    
-    include: () => [
-        'NumericLiteral',
-    ],
-    
-    fix(node) {
-        node.value = StringLiteral('hello');
-    },
-};
-```
-
-Assigning a factory value (`StringLiteral`, `NumericLiteral`, `Identifier`) triggers a `replace` plan step: the old node row is deleted, a new typed row is inserted.
-
-### `select` — raw SQL for complex or cross-file queries
-
-```js
-import {sql} from './putnik.js';
-
-const pluginFindUnusedExports = {
-    message: 'Unused export',
-    
-    select: sql`
-        SELECT e.id, e.file, e.start_line, e.start_col
-        FROM   ExportDeclaration e
-        LEFT JOIN ImportDeclaration i
-            ON  i.name = e.name
-            AND i.file != e.file
-        WHERE  i.id IS NULL
-        AND    e.file = :file
-    `,
-    
-    fix(node) {
-        node.remove();
-    },
-};
-```
-
-Use the `sql` tagged template for editor SQL highlighting. Raw SQL plugins can `JOIN` across tables and across files — impossible with Babel traverse.
-
-All nodes live in per-type tables. The `file_nodes` view unions them for single-query print:
+Plugins can also be loaded from `.sql` files using tagged sections:
 
 ```sql
-SELECT * FROM file_nodes WHERE file = 'src/index.js'
+-- @select
+SELECT id FROM VariableDeclaration WHERE file = :file AND kind = 'const';
+
+-- @report
+SELECT 'Prefer let over const' AS message,
+       start_line AS line, start_col AS col
+FROM VariableDeclaration WHERE file = :file AND kind = 'const';
+
+-- @fix
+UPDATE VariableDeclaration SET kind = 'let'
+WHERE file = :file AND kind = 'const';
 ```
 
-## Two modes
+```js
+import {loadSqlPlugin} from 'putnik';
 
-| mode   | what happens               | DB mutated |
-|--------|----------------------------|------------|
-| select | returns places (lint)      | no         |
-| fix    | mutates DB, returns places | yes        |
+const plugin = loadSqlPlugin('./plugins/const-to-let.sql');
+```
 
-## Cross-file transform
+`loadSqlPlugin` parses the file, validates that `@select`/`@report` are `SELECT` statements and `@fix` is an `UPDATE`, and throws if they are not.
 
-Because all files share one DB, a plugin can match across the whole project in one query:
+## Low-level exports
+
+These are used internally but exported for advanced use:
+
+```js
+import {
+    createDb,
+    createTable,
+    createAllTables,
+    createIndexForField,
+    createView,
+    writeAst,
+    readAst,
+    runPlugin,
+    parseSqlPlugin,
+    validatePlugin,
+    loadSqlPlugin,
+} from 'putnik';
+```
+
+`createIndexForField(db, type, field)` — adds an index on a specific column, useful when a plugin queries a field that doesn't have one by default:
+
+```js
+createIndexForField(db, 'VariableDeclaration', 'kind');
+```
+
+## Modes
+
+| mode   | DB mutated | return value                    |
+|--------|------------|---------------------------------|
+| report | no         | array of `{message, line, col}` |
+| fix    | yes        | array of `{message, line, col}` after mutation |
+
+## Cross-file transforms
+
+Because all files share one DB, a plugin can query across the whole project:
 
 ```js
 import {readFileSync} from 'node:fs';
-import {createPutnik, sql} from './putnik.js';
+import {createPutnik} from 'putnik';
 
-const putnik = createPutnik({
-    connection: '.putnik.db',
-});
+const putnik = createPutnik({connection: '.putnik.db'});
 
-// parse all files first
 for (const file of files)
     putnik.parse(file, readFileSync(file, 'utf8'));
 
-// find unused exports across all files in one query
-const plugin = {
-    message: 'Unused export',
-    
-    select: sql`
-        SELECT e.id, e.file, e.name, e.start_line, e.start_col
-        FROM   ExportDeclaration e
-        LEFT JOIN ImportDeclaration i
-            ON  i.name = e.name
-            AND i.file != e.file
-        WHERE  i.id IS NULL
-    `,
+const unusedExports = {
+    select: `
+        SELECT e.id FROM ExportDeclaration e
+        LEFT JOIN ImportDeclaration i ON i.name = e.name AND i.file != e.file
+        WHERE i.id IS NULL AND e.file = :file`,
+    report: `
+        SELECT 'Unused export' AS message, start_line AS line, start_col AS col
+        FROM ExportDeclaration e
+        LEFT JOIN ImportDeclaration i ON i.name = e.name AND i.file != e.file
+        WHERE i.id IS NULL AND e.file = :file`,
 };
 
-const places = putnik.run(null, [plugin]);
+const places = putnik.run(targetFile, [unusedExports]);
 ```
 
 ## License
