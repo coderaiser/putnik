@@ -136,8 +136,10 @@ test('readAst: srcType default', (t) => {
 
 test('readAst: null no rows', (t) => {
     const db = createDb();
+    
     createAllTables(db);
     createView(db);
+    
     const result = readAst(db, 'x.js');
     
     t.notOk(result);
