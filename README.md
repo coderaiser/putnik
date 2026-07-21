@@ -52,11 +52,11 @@ const constPlugin = {
 };
 
 // report mode — returns [code, places], does not mutate
-const [code, places] = await putnik.run('src/index.js', [constPlugin]);
+const [code, places] = await putnik('src/index.js', [constPlugin]);
 // places: [{message: 'Prefer let over const', line: 1, col: 0}]
 
 // fix mode — mutates the DB, returns [newCode, places]
-const [newCode] = await putnik.run('src/index.js', [constPlugin], {fix: true});
+const [newCode] = await putnik('src/index.js', [constPlugin], {fix: true});
 console.log(newCode);
 // let a = 1;
 ```
@@ -108,12 +108,22 @@ Type-specific columns: `kind` on `VariableDeclaration`, `name` on `Identifier`, 
 
 ### `run(file, plugins, opts?)`
 
-```js
-// report mode — does not mutate the DB
-const [code, places] = await putnik.run('src/index.js', [plugin]);
+Report mode, does not mutate the DB:
 
-// fix mode — mutates the DB
-const [newCode, places] = await putnik.run('src/index.js', [plugin], {fix: true});
+```js
+const [code, places] = await putnik('src/index.js', {
+    plugins,
+    fix: false,
+});
+```
+
+fix mode, mutates the DB:
+
+```js
+const [newCode, places] = await putnik('src/index.js', {
+    plugins,
+    fix: true,
+});
 ```
 
 Returns `[code, places]` — same shape as putout. `code` is the transformed source in fix mode, the original source in report mode. `places` is an array of `{message, line, col}`.
@@ -261,7 +271,9 @@ const unusedExports = {
     `,
 };
 
-const [, places] = await putnik.run(targetFile, [unusedExports]);
+const [, places] = await putnik(targetFile, {
+    plugins: [unusedExports],
+});
 ```
 
 ## License
