@@ -53,10 +53,13 @@ const constPlugin = {
 
 // report mode — returns [code, places], does not mutate
 const [code, places] = await putnik('src/index.js', [constPlugin]);
-// places: [{message: 'Prefer let over const', line: 1, col: 0}]
 
+// places: [{message: 'Prefer let over const', line: 1, col: 0}]
 // fix mode — mutates the DB, returns [newCode, places]
-const [newCode] = await putnik('src/index.js', [constPlugin], {fix: true});
+const [newCode] = await putnik('src/index.js', [constPlugin], {
+    fix: true,
+});
+
 console.log(newCode);
 // let a = 1;
 ```
@@ -69,7 +72,9 @@ console.log(newCode);
 import {createPutnik} from 'putnik';
 
 const inMemoryPutnik = createPutnik();
-const persistentPutnik = createPutnik({connection: '.putnik.db'});
+const persistentPutnik = createPutnik({
+    connection: '.putnik.db',
+});
 ```
 
 Returns `{ parse, run, getAst, print, db }`.
@@ -168,14 +173,14 @@ A plugin is a plain object with three SQL strings. The `@fix` query can be `UPDA
 const constToLet = {
     select: `SELECT id, type, file, start_line, start_col FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
     report: `SELECT 'Prefer let over const' AS message, start_line AS line, start_col AS col FROM VariableDeclaration WHERE file = :file AND kind = 'const'`,
-    fix:    `UPDATE VariableDeclaration SET kind = 'let' WHERE file = :file AND kind = 'const'`,
+    fix: `UPDATE VariableDeclaration SET kind = 'let' WHERE file = :file AND kind = 'const'`,
 };
 
 // DELETE — remove a node
 const noDebugger = {
     select: `SELECT id, type, file, start_line, start_col FROM DebuggerStatement WHERE file = :file`,
     report: `SELECT 'Unexpected debugger statement' AS message, start_line AS line, start_col AS col FROM DebuggerStatement WHERE file = :file`,
-    fix:    `DELETE FROM DebuggerStatement WHERE file = :file`,
+    fix: `DELETE FROM DebuggerStatement WHERE file = :file`,
 };
 
 // INSERT — add a new node
@@ -198,13 +203,11 @@ Plugins can also be loaded from `.sql` files:
 SELECT id, type, file, start_line, start_col
 FROM VariableDeclaration
 WHERE file = :file AND kind = 'const';
-
 -- @report
 SELECT 'Prefer let over const' AS message,
        start_line AS line, start_col AS col
 FROM VariableDeclaration
 WHERE file = :file AND kind = 'const';
-
 -- @fix
 UPDATE VariableDeclaration SET kind = 'let'
 WHERE file = :file AND kind = 'const';
@@ -225,7 +228,6 @@ Boolean-like AST fields are stored as `INTEGER`. Use `0` and `1` in plugin SQL �
 SELECT id, type, file, start_line, start_col
 FROM FunctionDeclaration
 WHERE file = :file AND async = 1;
-
 -- make all functions non-async
 UPDATE FunctionDeclaration SET async = 0 WHERE file = :file;
 ```
@@ -234,14 +236,14 @@ UPDATE FunctionDeclaration SET async = 0 WHERE file = :file;
 
 Plugins must use the common subset supported by both SQLite and Postgres. `validatePlugin` rejects non-portable constructs with a clear error:
 
-| rejected | use instead |
-|---|---|
+| rejected          | use instead                       |
+|-------------------|-----------------------------------|
 | `FULL OUTER JOIN` | two `LEFT JOIN`s with `UNION ALL` |
-| `RIGHT JOIN` | `LEFT JOIN` with tables swapped |
-| `REGEXP` | `LIKE` or `IN` |
-| `ANY` / `ALL` | `IN` with a subquery |
-| `true` / `false` | `1` / `0` |
-| `LATERAL` | correlated subquery |
+| `RIGHT JOIN`      | `LEFT JOIN` with tables swapped   |
+| `REGEXP`          | `LIKE` or `IN`                    |
+| `ANY` / `ALL`     | `IN` with a subquery              |
+| `true` / `false`  | `1` / `0`                         |
+| `LATERAL`         | correlated subquery               |
 
 ## Cross-file transforms
 
@@ -251,7 +253,9 @@ Because all files share one DB, a plugin can query across the whole project:
 import {readFileSync} from 'node:fs';
 import {createPutnik} from 'putnik';
 
-const putnik = createPutnik({connection: '.putnik.db'});
+const putnik = createPutnik({
+    connection: '.putnik.db',
+});
 
 for (const file of files)
     putnik.parse(file, readFileSync(file, 'utf8'));
