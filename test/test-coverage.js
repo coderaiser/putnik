@@ -1,5 +1,6 @@
 import {test} from 'supertape';
-import {parse} from '@putout/babel';
+import {parse} from 'putout';
+import {tryCatch} from 'try-catch';
 import {runPlugin} from '../lib/runner.js';
 import {
     createDb,
@@ -289,34 +290,40 @@ test('writer: update', (t) => {
     t.end();
 });
 
-test('writer: forof', (t) => {
+test('writer: for..of', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('for await (const a of [1]) {}', {
-        sourceType: 'module',
-        plugins: ['asyncGenerators'],
-    }), 'fo.js');
     
-    const result = typeof readAst(db, 'fo.js').program.body[0].await;
+    const astFrom = parse('for await (const a of [1]) {}');
+    
+    writeAst(db, astFrom, 'fo.js');
+    
+    const astTo = readAst(db, 'fo.js');
+    
+    const result = astTo.program.body[0].await;
+    const type = typeof result;
     const expected = 'boolean';
     
-    t.equal(result, expected);
+    t.equal(type, expected);
     t.end();
 });
 
 test('writer: yield', (t) => {
     const db = createDb();
+    
     createAllTables(db);
     createView(db);
     writeAst(db, parse('function* g() { yield 1; }', {
         sourceType: 'module',
     }), 'y.js');
     
-    const result = typeof readAst(db, 'y.js').program.body[0].body.body[0].delegate;
+    const {delegate} = readAst(db, 'y.js').program.body[0].body.body[0].expression;
+    
+    const type = typeof delegate;
     const expected = 'boolean';
     
-    t.equal(result, expected);
+    t.equal(type, expected);
     t.end();
 });
 
@@ -336,11 +343,13 @@ test('writer: export', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('export { a };', {
+    writeAst(db, parse('const a = 1; export { a };', {
         sourceType: 'module',
     }), 'e.js');
     
-    t.ok(readAst(db, 'e.js'));
+    const {type} = readAst(db, 'e.js');
+    
+    t.equal(type, 'File');
     t.end();
 });
 
@@ -412,13 +421,27 @@ test('writer: null prog', (t) => {
     t.end();
 });
 
-test('sqlPlugin: parse', (t) => {
+test('sqlPlugin: parse: report', (t) => {
     const raw = '-- @select\nSELECT 1\n-- @report\nSELECT 2';
-    const p = parseSqlPlugin(raw);
+    const {report} = parseSqlPlugin(raw);
     
-    t.ok(p.select);
-    t.ok(p.report);
-    t.notOk(p.fix);
+    t.ok(report);
+    t.end();
+});
+
+test('sqlPlugin: parse: select', (t) => {
+    const raw = '-- @select\nSELECT 1\n-- @report\nSELECT 2';
+    const {select} = parseSqlPlugin(raw);
+    
+    t.ok(select);
+    t.end();
+});
+
+test('sqlPlugin: parse: fix', (t) => {
+    const raw = '-- @select\nSELECT 1\n-- @report\nSELECT 2';
+    const {fix} = parseSqlPlugin(raw);
+    
+    t.notOk(fix);
     t.end();
 });
 
@@ -429,8 +452,7 @@ test('sqlPlugin: empty', (t) => {
     t.end();
 });
 
-test('sqlPlugin: validate skip', async (t) => {
-    const {tryCatch} = await import('try-catch');
+test('sqlPlugin: validate skip', (t) => {
     const [e] = tryCatch(validatePlugin, {
         select: null,
         report: undefined,
@@ -440,32 +462,25 @@ test('sqlPlugin: validate skip', async (t) => {
     t.end();
 });
 
-test('sqlPlugin: validate sel err', async (t) => {
-    const {tryCatch} = await import('try-catch');
+test('sqlPlugin: validate: select:error', (t) => {
     const [e] = tryCatch(validatePlugin, {
         select: 'UPDATE t',
     });
     
-    const result = e.message.includes('SELECT');
-    
-    t.ok(result);
+    t.match(e.message, 'Expected');
     t.end();
 });
 
-test('sqlPlugin: validate rpt err', async (t) => {
-    const {tryCatch} = await import('try-catch');
+test('sqlPlugin: validate report error', (t) => {
     const [e] = tryCatch(validatePlugin, {
         report: 'UPDATE t',
     });
     
-    const result = e.message.includes('SELECT');
-    
-    t.ok(result);
+    t.match(e.message, 'Expected');
     t.end();
 });
 
-test('sqlPlugin: insert fix', async (t) => {
-    const {tryCatch} = await import('try-catch');
+test('sqlPlugin: insert fix', (t) => {
     const [e] = tryCatch(validatePlugin, {
         select: 'SELECT 1',
         report: 'SELECT 1',
@@ -476,8 +491,7 @@ test('sqlPlugin: insert fix', async (t) => {
     t.end();
 });
 
-test('sqlPlugin: delete fix', async (t) => {
-    const {tryCatch} = await import('try-catch');
+test('sqlPlugin: delete fix', (t) => {
     const [e] = tryCatch(validatePlugin, {
         select: 'SELECT 1',
         report: 'SELECT 1',
@@ -488,13 +502,27 @@ test('sqlPlugin: delete fix', async (t) => {
     t.end();
 });
 
-test('loadSqlPlugin: loads', (t) => {
+test('loadSqlPlugin: loads: select', (t) => {
     const url = new URL('../lib/plugins/const-to-let.sql', import.meta.url);
-    const p = loadSqlPlugin(url.pathname);
+    const {select} = loadSqlPlugin(url.pathname);
     
-    t.ok(p.select);
-    t.ok(p.report);
-    t.ok(p.fix);
+    t.ok(select);
+    t.end();
+});
+
+test('loadSqlPlugin: loads: report', (t) => {
+    const url = new URL('../lib/plugins/const-to-let.sql', import.meta.url);
+    const {report} = loadSqlPlugin(url.pathname);
+    
+    t.ok(report);
+    t.end();
+});
+
+test('loadSqlPlugin: loads: fix', (t) => {
+    const url = new URL('../lib/plugins/const-to-let.sql', import.meta.url);
+    const {fix} = loadSqlPlugin(url.pathname);
+    
+    t.ok(fix);
     t.end();
 });
 
@@ -508,11 +536,22 @@ test('runPlugin: no match', async (t) => {
     t.end();
 });
 
-test('prepare: run/get all', (t) => {
+test('prepare: run: get', (t) => {
     const db = createDb();
+    
     db.exec('CREATE TABLE t (x INTEGER)');
     db.run('INSERT INTO t VALUES (42)');
+    
     t.equal(db.get('SELECT x FROM t').x, 42);
+    t.end();
+});
+
+test('prepare: run: all', (t) => {
+    const db = createDb();
+    
+    db.exec('CREATE TABLE t (x INTEGER)');
+    db.run('INSERT INTO t VALUES (42)');
+    
     t.equal(db.all('SELECT x FROM t').length, 1);
     t.end();
 });

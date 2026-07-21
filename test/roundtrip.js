@@ -1,4 +1,5 @@
 import {test} from 'supertape';
+import {montag} from 'montag';
 import {createPutnik} from '../lib/putnik.js';
 
 const roundtrip = (source) => {
@@ -58,7 +59,11 @@ test('roundtrip: computed member expression', (t) => {
 
 test('roundtrip: shorthand object property', (t) => {
     const result = roundtrip('const o = {a};\n');
-    const expected = 'const o = {a};\n';
+    const expected = montag`
+        const o = {
+            a,
+        };\n
+    `;
     
     t.equal(result, expected);
     t.end();

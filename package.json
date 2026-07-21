@@ -44,6 +44,7 @@
     "@putout/babel": "^5.9.9",
     "@putout/printer": "^18.38.1",
     "better-sqlite3": "^12.11.1",
+    "just-snake-case": "^3.2.0",
     "montag": "^2.0.1",
     "node-sql-parser": "^5.4.0"
   },
