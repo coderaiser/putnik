@@ -4,40 +4,62 @@ import {createPutnik} from '../lib/putnik.js';
 const roundtrip = (source) => {
     const putnik = createPutnik();
     putnik.parse('test.js', source);
+    
     return putnik.print('test.js');
 };
 
 test('roundtrip: variable declaration', (t) => {
-    t.equal(roundtrip('const a = 1;\n'), 'const a = 1;\n');
+    const result = roundtrip('const a = 1;\n');
+    const expected = 'const a = 1;\n';
+    
+    t.equal(result, expected);
     t.end();
 });
 
 test('roundtrip: async function', (t) => {
-    t.equal(roundtrip('async function f(a, b) {\n    return a + b;\n}\n'), 'async function f(a, b) {\n    return a + b;\n}\n');
+    const result = roundtrip('async function f(a, b) {\n    return a + b;\n}\n');
+    const expected = 'async function f(a, b) {\n    return a + b;\n}\n';
+    
+    t.equal(result, expected);
     t.end();
 });
 
 test('roundtrip: generator function', (t) => {
-    t.equal(roundtrip('function* g() {\n    yield 1;\n}\n'), 'function* g() {\n    yield 1;\n}\n');
+    const result = roundtrip('function* g() {\n    yield 1;\n}\n');
+    const expected = 'function* g() {\n    yield 1;\n}\n';
+    
+    t.equal(result, expected);
     t.end();
 });
 
 test('roundtrip: class with method', (t) => {
-    t.equal(roundtrip('class Foo {\n    bar() {}\n}\n'), 'class Foo {\n    bar() {}\n}\n');
+    const result = roundtrip('class Foo {\n    bar() {}\n}\n');
+    const expected = 'class Foo {\n    bar() {}\n}\n';
+    
+    t.equal(result, expected);
     t.end();
 });
 
 test('roundtrip: arrow function', (t) => {
-    t.equal(roundtrip('const f = async (a) => a + 1;\n'), 'const f = async (a) => a + 1;\n');
+    const result = roundtrip('const f = async (a) => a + 1;\n');
+    const expected = 'const f = async (a) => a + 1;\n';
+    
+    t.equal(result, expected);
     t.end();
 });
 
 test('roundtrip: computed member expression', (t) => {
-    t.equal(roundtrip('a[b];\n'), 'a[b];\n');
+    const result = roundtrip('a[b];\n');
+    const expected = 'a[b];\n';
+    
+    t.equal(result, expected);
     t.end();
 });
 
 test('roundtrip: shorthand object property', (t) => {
-    t.equal(roundtrip('const o = {a};\n'), 'const o = {a};\n');
+    const result = roundtrip('const o = {a};\n');
+    const expected = 'const o = {a};\n';
+    
+    t.equal(result, expected);
     t.end();
 });

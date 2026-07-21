@@ -1,13 +1,19 @@
 import {test} from 'supertape';
-import {createDb, createAllTables, createView, writeAst} from '../lib/putnik.js';
-import {readAst} from '../lib/read-ast.js';
 import {parse} from '@putout/babel';
+import {readAst} from '../lib/read-ast.js';
+import {
+    createDb,
+    createAllTables,
+    createView,
+    writeAst,
+} from '../lib/putnik.js';
 
 const makeDb = (source) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
     writeAst(db, parse(source), 'test.js');
+    
     return db;
 };
 
@@ -37,27 +43,35 @@ test('read-ast: Identifier name', (t) => {
 });
 
 test('read-ast: FunctionDeclaration async is true', (t) => {
-    t.equal(readAst(makeDb('async function f() {}'), 'test.js').program.body[0].async, true);
+    t.ok(readAst(makeDb('async function f() {}'), 'test.js').program.body[0].async);
     t.end();
 });
 
 test('read-ast: FunctionDeclaration async is boolean type', (t) => {
-    t.equal(typeof readAst(makeDb('async function f() {}'), 'test.js').program.body[0].async, 'boolean');
+    const result = typeof readAst(makeDb('async function f() {}'), 'test.js').program.body[0].async;
+    const expected = 'boolean';
+    
+    t.equal(result, expected);
     t.end();
 });
 
 test('read-ast: FunctionDeclaration generator is false', (t) => {
-    t.equal(readAst(makeDb('async function f() {}'), 'test.js').program.body[0].generator, false);
+    t.notOk(readAst(makeDb('async function f() {}'), 'test.js').program.body[0].generator);
     t.end();
 });
 
 test('read-ast: FunctionDeclaration generator is boolean type', (t) => {
-    t.equal(typeof readAst(makeDb('async function f() {}'), 'test.js').program.body[0].generator, 'boolean');
+    const result = typeof readAst(makeDb('async function f() {}'), 'test.js').program.body[0].generator;
+    const expected = 'boolean';
+    
+    t.equal(result, expected);
     t.end();
 });
 
 test('read-ast: CallExpression arguments is array', (t) => {
-    t.ok(Array.isArray(readAst(makeDb('f(a, b);'), 'test.js').program.body[0].expression.arguments));
+    const result = Array.isArray(readAst(makeDb('f(a, b);'), 'test.js').program.body[0].expression.arguments);
+    
+    t.ok(result);
     t.end();
 });
 
@@ -70,7 +84,9 @@ test('read-ast: empty db returns null', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    t.equal(readAst(db, 'test.js'), null);
+    const result = readAst(db, 'test.js');
+    
+    t.notOk(result);
     t.end();
 });
 
@@ -80,12 +96,18 @@ test('read-ast: node type not in NODE_FIELDS does not crash', (t) => {
 });
 
 test('read-ast: MemberExpression computed is boolean', (t) => {
-    t.equal(typeof readAst(makeDb('a[b];'), 'test.js').program.body[0].expression.computed, 'boolean');
+    const result = typeof readAst(makeDb('a[b];'), 'test.js').program.body[0].expression.computed;
+    const expected = 'boolean';
+    
+    t.equal(result, expected);
     t.end();
 });
 
 test('read-ast: ObjectProperty shorthand is boolean', (t) => {
     const ast = readAst(makeDb('const o = {a};'), 'test.js');
-    t.equal(typeof ast.program.body[0].declarations[0].init.properties[0].shorthand, 'boolean');
+    const result = typeof ast.program.body[0].declarations[0].init.properties[0].shorthand;
+    const expected = 'boolean';
+    
+    t.equal(result, expected);
     t.end();
 });
