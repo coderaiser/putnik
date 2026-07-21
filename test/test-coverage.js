@@ -25,9 +25,7 @@ const setup = () => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = 1;', {
-        sourceType: 'module',
-    }), 'index.js');
+    writeAst(db, parse('const a = 1;'), 'index.js');
     
     return db;
 };
@@ -47,17 +45,36 @@ test('createPutnik: print no ast', (t) => {
     t.end();
 });
 
-test('createPutnik: pdg', (t) => {
-    const p = createPutnik();
-    p.parse('t.js', 'const a = 1;');
-    t.equal(p.getAst('t.js').program.body[0].kind, 'const');
+test('createPutnik: getAst', (t) => {
+    const {parse, getAst} = createPutnik();
     
-    const result = p
-        .print('t.js')
-        .includes('const a = 1');
+    parse('t.js', 'const a = 1;');
     
-    t.ok(result);
-    t.ok(p.db);
+    const ast = getAst('t.js');
+    const {kind} = ast.program.body[0];
+    
+    t.equal(kind, 'const');
+    t.end();
+});
+
+test('createPutnik: print', (t) => {
+    const {parse, print} = createPutnik();
+    
+    parse('t.js', 'const a = 1;');
+    
+    const result = print('t.js');
+    const expected = 'const a = 1;\n';
+    
+    t.equal(result, expected);
+    t.end();
+});
+
+test('createPutnik: db', (t) => {
+    const {parse, db} = createPutnik();
+    
+    parse('t.js', 'const a = 1;');
+    
+    t.ok(db);
     t.end();
 });
 
@@ -131,9 +148,7 @@ test('readAst: null del root', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = 1;', {
-        sourceType: 'module',
-    }), 'e.js');
+    writeAst(db, parse('const a = 1;'), 'e.js');
     db.run('DELETE FROM Program WHERE file = ?', ['e.js']);
     
     t.notOk(readAst(db, 'e.js'));
@@ -142,11 +157,10 @@ test('readAst: null del root', (t) => {
 
 test('readAst: debugger', (t) => {
     const db = createDb();
+    
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('debugger;', {
-        sourceType: 'module',
-    }), 'd.js');
+    writeAst(db, parse('debugger;'), 'd.js');
     
     t.equal(readAst(db, 'd.js').program.body[0].type, 'DebuggerStatement');
     t.end();
@@ -156,9 +170,7 @@ test('readAst: memb bool', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('a[b];', {
-        sourceType: 'module',
-    }), 'm.js');
+    writeAst(db, parse('a[b];'), 'm.js');
     
     const result = typeof readAst(db, 'm.js').program.body[0].expression.computed;
     const expected = 'boolean';
@@ -171,9 +183,7 @@ test('writer: bool lit', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = true;', {
-        sourceType: 'module',
-    }), 'b.js');
+    writeAst(db, parse('const a = true;'), 'b.js');
     
     t.equal(readAst(db, 'b.js').program.body[0].declarations[0].init.value, 1);
     t.end();
@@ -183,26 +193,37 @@ test('writer: null lit', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = null;', {
-        sourceType: 'module',
-    }), 'n.js');
+    writeAst(db, parse('const a = null;'), 'n.js');
     
     t.ok(readAst(db, 'n.js'));
     t.end();
 });
 
-test('writer: regexp', (t) => {
+test('writer: regexp: pattern', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = /test/gi;', {
-        sourceType: 'module',
-    }), 'r.js');
     
-    const n = readAst(db, 'r.js').program.body[0].declarations[0].init;
+    const astFrom = parse('const a = /test/gi;');
+    writeAst(db, astFrom, 'r.js');
     
-    t.equal(n.pattern, 'test');
-    t.equal(n.flags, 'gi');
+    const {pattern} = readAst(db, 'r.js').program.body[0].declarations[0].init;
+    
+    t.equal(pattern, 'test');
+    t.end();
+});
+
+test('writer: regexp: flags', (t) => {
+    const db = createDb();
+    createAllTables(db);
+    createView(db);
+    
+    const astFrom = parse('const a = /test/gi;');
+    writeAst(db, astFrom, 'r.js');
+    
+    const {flags} = readAst(db, 'r.js').program.body[0].declarations[0].init;
+    
+    t.equal(flags, 'gi');
     t.end();
 });
 
@@ -210,9 +231,7 @@ test('writer: bigint', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = 1n;', {
-        sourceType: 'module',
-    }), 'bi.js');
+    writeAst(db, parse('const a = 1n;'), 'bi.js');
     
     t.ok(readAst(db, 'bi.js'));
     t.end();
@@ -222,9 +241,7 @@ test('writer: template', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = `hello`;', {
-        sourceType: 'module',
-    }), 'tl.js');
+    writeAst(db, parse('const a = `hello`;'), 'tl.js');
     
     t.ok(readAst(db, 'tl.js'));
     t.end();
@@ -234,9 +251,7 @@ test('writer: unary', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = -1;', {
-        sourceType: 'module',
-    }), 'u.js');
+    writeAst(db, parse('const a = -1;'), 'u.js');
     
     t.equal(readAst(db, 'u.js').program.body[0].declarations[0].init.operator, '-');
     t.end();
@@ -246,9 +261,7 @@ test('writer: assign', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('a = 1;', {
-        sourceType: 'module',
-    }), 'as.js');
+    writeAst(db, parse('a = 1;'), 'as.js');
     
     t.equal(readAst(db, 'as.js').program.body[0].expression.operator, '=');
     t.end();
@@ -258,9 +271,7 @@ test('writer: binary', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = 1 + 2;', {
-        sourceType: 'module',
-    }), 'be.js');
+    writeAst(db, parse('const a = 1 + 2;'), 'be.js');
     
     t.equal(readAst(db, 'be.js').program.body[0].declarations[0].init.operator, '+');
     t.end();
@@ -270,9 +281,7 @@ test('writer: logical', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = true && false;', {
-        sourceType: 'module',
-    }), 'le.js');
+    writeAst(db, parse('const a = true && false;'), 'le.js');
     
     t.equal(readAst(db, 'le.js').program.body[0].declarations[0].init.operator, '&&');
     t.end();
@@ -280,18 +289,23 @@ test('writer: logical', (t) => {
 
 test('writer: update', (t) => {
     const db = createDb();
+    
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('let a = 0; a++;', {
-        sourceType: 'module',
-    }), 'ue.js');
     
-    t.equal(readAst(db, 'ue.js').program.body[1].expression.operator, '++');
+    const astFrom = parse('let a = 0; a++;');
+    writeAst(db, astFrom, 'ue.js');
+    
+    const ast = readAst(db, 'ue.js');
+    const {operator} = ast.program.body[1].expression;
+    
+    t.equal(operator, '++');
     t.end();
 });
 
 test('writer: for..of', (t) => {
     const db = createDb();
+    
     createAllTables(db);
     createView(db);
     
@@ -314,9 +328,7 @@ test('writer: yield', (t) => {
     
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('function* g() { yield 1; }', {
-        sourceType: 'module',
-    }), 'y.js');
+    writeAst(db, parse('function* g() { yield 1; }'), 'y.js');
     
     const {delegate} = readAst(db, 'y.js').program.body[0].body.body[0].expression;
     
@@ -331,9 +343,7 @@ test('writer: import', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('import fs from "fs";', {
-        sourceType: 'module',
-    }), 'i.js');
+    writeAst(db, parse('import fs from "fs";'), 'i.js');
     
     t.equal(readAst(db, 'i.js').program.body[0].source.value, 'fs');
     t.end();
@@ -343,9 +353,7 @@ test('writer: export', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = 1; export { a };', {
-        sourceType: 'module',
-    }), 'e.js');
+    writeAst(db, parse('const a = 1; export { a };'), 'e.js');
     
     const {type} = readAst(db, 'e.js');
     
@@ -357,10 +365,7 @@ test('writer: jsx', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = <br />;', {
-        sourceType: 'module',
-        plugins: ['jsx'],
-    }), 'j.js');
+    writeAst(db, parse('const a = <br />;'), 'j.js');
     
     t.ok(readAst(db, 'j.js'));
     t.end();
@@ -370,10 +375,7 @@ test('writer: jsx id', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = <div></div>;', {
-        sourceType: 'module',
-        plugins: ['jsx'],
-    }), 'ji.js');
+    writeAst(db, parse('const a = <div></div>;'), 'ji.js');
     const o = readAst(db, 'ji.js').program.body[0].declarations[0].init.openingElement;
     
     t.equal(o.name.name, 'div');
@@ -384,10 +386,7 @@ test('writer: jsx text', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('const a = <div>hello</div>;', {
-        sourceType: 'module',
-        plugins: ['jsx'],
-    }), 'jt.js');
+    writeAst(db, parse('const a = <div>hello</div>;'), 'jt.js');
     
     t.ok(readAst(db, 'jt.js'));
     t.end();
@@ -397,10 +396,7 @@ test('writer: private prop', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    writeAst(db, parse('class Foo { #x = 1; }', {
-        sourceType: 'module',
-        plugins: ['classPrivateProperties'],
-    }), 'cp.js');
+    writeAst(db, parse('class Foo { #x = 1; }'), 'cp.js');
     
     t.ok(readAst(db, 'cp.js'));
     t.end();
@@ -410,9 +406,7 @@ test('writer: null prog', (t) => {
     const db = createDb();
     createAllTables(db);
     createView(db);
-    const ast = parse('const a = 1;', {
-        sourceType: 'module',
-    });
+    const ast = parse('const a = 1;');
     
     ast.program = null;
     writeAst(db, ast, 't.js');
