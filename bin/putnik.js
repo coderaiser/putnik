@@ -1,16 +1,13 @@
-import {fileURLToPath} from 'node:url';
-import {dirname, resolve} from 'node:path';
-import {createPutnik, loadSqlPlugin} from '../lib/putnik.js';
+import {loadSqlPlugin} from '../lib/putnik.js';
+import putnik from '../lib/putnik.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const pluginConstToLet = loadSqlPlugin(resolve(__dirname, '../lib/plugins/const-to-let.sql'));
+const pluginConstToLet = loadSqlPlugin(new URL('../lib/plugins/const-to-let.sql', import.meta.url).pathname);
 
-const putnik = createPutnik();
+const [code, places] = await putnik('src/index.js', 'const a = 1;', {
+    plugins: [['const-to-let', pluginConstToLet]],
+});
 
-putnik.parse('src/index.js', 'const a = 1;');
+console.log(code);
 
-const plugins = [pluginConstToLet];
-
-const places = putnik.run('src/index.js', plugins);
-
-console.log(places);
+if (places.length)
+    console.log(places);
