@@ -5,7 +5,7 @@ export default {
     'fresh:lint': () => run('lint', '--fresh'),
     'lint:fresh': () => run('lint', '--fresh'),
     'fix:lint': () => run('lint', '--fix'),
-    'test': () => 'tape lib/**/*.spec.js',
+    'test': () => `tape 'test/*.js' 'lib/**/*.spec.js'`,
     'watch:test': async () => await run('watcher', `"${await run('test')}"`),
     'watch:tape': () => 'nodemon -w lib --exec tape',
     'watch:coverage:base': async () => await run('watcher', `nyc "${await run('test')}"`),
