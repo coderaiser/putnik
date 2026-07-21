@@ -107,6 +107,7 @@ test('parseAndWriteToDb: src', (t) => {
 
 test('readAst: srcType default', (t) => {
     const db = setup();
+    
     db.run('UPDATE Program SET source_type = NULL WHERE file = :file', {
         file: 'index.js',
     });
@@ -444,6 +445,7 @@ test('sqlPlugin: validate sel err', async (t) => {
     const [e] = tryCatch(validatePlugin, {
         select: 'UPDATE t',
     });
+    
     const result = e.message.includes('SELECT');
     
     t.ok(result);
@@ -455,6 +457,7 @@ test('sqlPlugin: validate rpt err', async (t) => {
     const [e] = tryCatch(validatePlugin, {
         report: 'UPDATE t',
     });
+    
     const result = e.message.includes('SELECT');
     
     t.ok(result);
@@ -531,6 +534,7 @@ test('default export: fixes', async (t) => {
         plugins: [],
         fix: true,
     });
+    
     const result = code.includes('const a');
     
     t.ok(result);
