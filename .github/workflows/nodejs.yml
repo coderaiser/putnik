@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 22.x
       - name: Install Redrun
-        run: bun i redrun madrun palabra -g --no-save
+        run: bun i redrun madrun -g --no-save
       - name: Install
         run: bun i --no-save
       - name: Init Madrun
@@ -52,7 +52,7 @@ jobs:
         with:
           node-version: 22.x
       - name: Install Redrun
-        run: bun i redrun madrun -g --no-save
+        run: bun i redrun madrun palabra -g --no-save
       - name: Install
         run: bun i --no-save
       - name: Init Madrun
