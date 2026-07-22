@@ -1,19 +1,23 @@
-import {run} from 'madrun';
+import {run, cutEnv} from 'madrun';
+
+const env = {
+    SUPERTAPE_PROGRESS_BAR_MIN: 10,
+};
 
 export default {
     'lint': () => 'putout .',
     'fresh:lint': () => run('lint', '--fresh'),
     'lint:fresh': () => run('lint', '--fresh'),
     'fix:lint': () => run('lint', '--fix'),
-    'test': () => `tape 'lib/**/*.spec.js'`,
+    'test': () => [env, `tape 'lib/**/*.spec.js'`],
     'test:e2e': () => `tape 'test/*.js'`,
-    'watch:test': async () => await run('watcher', `"${await run('test')}"`),
+    'watch:test': async () => [env, await run('watcher', `"${await cutEnv('test')}"`)],
     'watch:tape': () => 'nodemon -w lib --exec tape',
-    'watch:coverage:base': async () => await run('watcher', `nyc "${await run('test')}"`),
+    'watch:coverage:base': async () => [env, await run('watcher', `nyc "${await cutEnv('test')}"`)],
     'watch:coverage:tape': () => run('watcher', 'nyc tape'),
-    'watch:coverage': async () => await run('watch:coverage:base'),
+    'watch:coverage': async () => [env, await cutEnv('watch:coverage:base')],
     'watcher': () => 'nodemon -w test -w lib --exec',
-    'coverage': async () => `c8 ${await run('test')}`,
+    'coverage': async () => [env, `c8 ${await cutEnv('test')}`],
     'report': () => 'c8 report --reporter=lcov',
     'postpublish': () => 'npm i -g',
 };
