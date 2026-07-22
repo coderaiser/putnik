@@ -5,12 +5,7 @@ import {join} from 'node:path';
 import {createConnection} from 'node:net';
 import {setTimeout} from 'node:timers';
 import {test} from 'supertape';
-import {montag} from 'montag';
 import {createDb} from '../lib/db/postgres.js';
-import {
-    createAllTables,
-    createView,
-} from '../lib/putnik.js';
 
 test('postgres: createDb connects', async (t) => {
     const {db, stopPostgres} = await startPostgres();
