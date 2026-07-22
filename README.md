@@ -26,7 +26,11 @@ npm i putnik
 ## Usage
 
 ```js
-import {putnik, parse, print} from 'putnik';
+import {
+    putnik,
+    parse,
+    print,
+} from 'putnik';
 
 parse('src/index.js', 'const a = 1;');
 
