@@ -6,10 +6,10 @@
         "**/*.config.*",
         "**/*.spec.*",
         ".*",
+        "lib/db/postgres.js",
         "bin",
         "test",
-        "coverage",
-        "lib/db/postgres.js"
+        "coverage"
     ],
     "branches": 100,
     "lines": 100,
