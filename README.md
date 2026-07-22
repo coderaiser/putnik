@@ -28,11 +28,11 @@ npm i putnik
 ```js
 import {
     putnik,
-    parse,
+    babelParse,
     print,
 } from 'putnik';
 
-parse('src/index.js', 'const a = 1;');
+babelParse('src/index.js', 'const a = 1;');
 
 const constPlugin = {
     select: `
@@ -66,12 +66,12 @@ console.log(newCode);
 
 ## API
 
-### `parse(file, source)`
+### `babelParse(file, source)`
 
 Parses `source` with `@putout/babel` and writes every AST node into its typed table. Call once per file before `run`.
 
 ```js
-parse('src/index.js', 'const a = 1;');
+babelParse('src/index.js', 'const a = 1;');
 ```
 
 Each Babel node type gets its own table. Every row shares these base columns:
@@ -239,7 +239,7 @@ const putnik = createPutnik({
 });
 
 for (const file of files)
-    putnik.parse(file, readFileSync(file, 'utf8'));
+    putnik.babelParse(file, readFileSync(file, 'utf8'));
 
 const unusedExports = {
     select: `
