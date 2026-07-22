@@ -109,7 +109,7 @@ Type-specific columns: `kind` on `VariableDeclaration`, `name` on `Identifier`, 
 
 ***
 
-### `run(file, plugins, opts?)`
+### `putnik(file, options)`
 
 Report mode, does not mutate the DB:
 
