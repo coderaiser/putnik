@@ -13,7 +13,7 @@
 
 > **Putnik** (*Chroatian*) - passenger
 
-**Putnik** is a code transformation engine built on top of 🐊[**Putout**](https://github.com/coderaiser/putout). Instead of traversing the AST in memory with Babel, it writes the AST into a SQLite database, runs SQL-aware plugins against it, then reads the AST back and prints it with `@putout/printer`.
+**Putnik** is a code transformation engine built on top of 🐊[**Putout**](https://github.com/coderaiser/putout). Instead of traversing the AST in memory with Babel, it writes the AST into a SQLite database, runs SQL-aware plugins against it, then reads the AST back and prints it with [`@putout/printer`](https://github.com/putoutjs/printer).
 
 The key idea: **SQL indexes beat Babel traverse at scale**. A plugin that finds `DebuggerStatement` nodes queries one table with one index hit instead of visiting every node in the file.
 
