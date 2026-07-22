@@ -5,25 +5,17 @@ on:
   - push
   - pull_request
 jobs:
-  build:
+  unit:
     runs-on: ubuntu-latest
-    env:
-      NAME: redrun
-    strategy:
-      matrix:
-        node-version:
-          - 22.x
-          - 24.x
-          - 26.x
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
       - name: Install Redrun
         run: bun i redrun madrun -g --no-save
       - name: Install
@@ -36,7 +28,9 @@ jobs:
         uses: EndBug/add-and-commit@v10
         continue-on-error: true
         with:
-          message: "chore: ${{ env.NAME }}: actions: lint ☘️"
+          message: "chore: redrun: actions: lint ☘️"
+      - name: Test
+        run: redrun test
       - name: Coverage
         run: redrun coverage report
       - name: Coveralls
@@ -46,3 +40,27 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: typos-action
         uses: crate-ci/typos@v1.0.4
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+      - name: Install Redrun
+        run: bun i redrun madrun -g --no-save
+      - name: Install
+        run: bun i --no-save
+      - name: Init Madrun
+        run: madrun --init
+      - name: Download pgsqlite
+        run: |
+          curl -L https://github.com/erans/pgsqlite/releases/latest/download/pgsqlite-linux-amd64 \
+            -o /usr/local/bin/pgsqlite && chmod +x /usr/local/bin/pgsqlite
+      - name: E2E Test
+        run: redrun test:e2e

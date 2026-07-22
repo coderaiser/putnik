@@ -45,6 +45,7 @@
     "@putout/printer": "^18.38.1",
     "better-sqlite3": "^12.11.1",
     "just-snake-case": "^3.2.0",
+    "libsql": "^0.5.29",
     "montag": "^2.0.1",
     "node-sql-parser": "^5.4.0"
   },
@@ -54,6 +55,7 @@
     "madrun": "^13.0.4",
     "nodemon": "^3.0.1",
     "npm-run-all": "^4.0.0",
+    "postgres": "^3.4.9",
     "putout": "^42.10.0",
     "superc8": "^12.1.3",
     "supertape": "^13.4.3",
