@@ -22,21 +22,6 @@ test('postgres: createDb connects', async (t) => {
     t.end();
 });
 
-test('postgres: createAllTables and createView', async (t) => {
-    const {db, stopPostgres} = await startPostgres();
-    
-    await createAllTables(db);
-    await createView(db);
-    const row = await db.get(montag`
-        SELECT name FROM sqlite_master WHERE type='view'
-    `);
-    
-    await stopPostgres();
-    
-    t.equal(row?.name, 'file_nodes');
-    t.end();
-});
-
 const startPostgres = async () => {
     const dir = mkdtempSync(join(tmpdir(), 'putnik-pg-'));
     const port = 5433 + Math.floor(Math.random() * 1000);

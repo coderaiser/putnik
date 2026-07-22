@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 22.x
       - name: Install Redrun
-        run: bun i redrun madrun -g --no-save
+        run: bun i redrun madrun palabra -g --no-save
       - name: Install
         run: bun i --no-save
       - name: Init Madrun
@@ -59,7 +59,6 @@ jobs:
         run: madrun --init
       - name: Download pgsqlite
         run: |
-          curl -L https://github.com/erans/pgsqlite/releases/latest/download/pgsqlite-linux-amd64 \
-            -o /usr/local/bin/pgsqlite && chmod +x /usr/local/bin/pgsqlite
+          palabra i pgsqlite
       - name: E2E Test
         run: redrun test:e2e

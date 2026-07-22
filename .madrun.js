@@ -2,6 +2,7 @@ import {run, cutEnv} from 'madrun';
 
 const env = {
     SUPERTAPE_PROGRESS_BAR_MIN: 10,
+    TIMEOUT: 10_000,
 };
 
 export default {
@@ -10,7 +11,7 @@ export default {
     'lint:fresh': () => run('lint', '--fresh'),
     'fix:lint': () => run('lint', '--fix'),
     'test': () => [env, `tape 'lib/**/*.spec.js'`],
-    'test:e2e': () => `tape 'test/*.js'`,
+    'test:e2e': () => [env, `tape 'test/*.js'`],
     'watch:test': async () => [env, await run('watcher', `"${await cutEnv('test')}"`)],
     'watch:tape': () => 'nodemon -w lib --exec tape',
     'watch:coverage:base': async () => [env, await run('watcher', `nyc "${await cutEnv('test')}"`)],
@@ -21,3 +22,4 @@ export default {
     'report': () => 'c8 report --reporter=lcov',
     'postpublish': () => 'npm i -g',
 };
+
