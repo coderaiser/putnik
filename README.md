@@ -26,11 +26,9 @@ npm i putnik
 ## Usage
 
 ```js
-import {createPutnik} from 'putnik';
+import {putnik, parse, print} from 'putnik';
 
-const putnik = createPutnik();
-
-putnik.parse('src/index.js', 'const a = 1;');
+parse('src/index.js', 'const a = 1;');
 
 const constPlugin = {
     select: `
@@ -64,31 +62,12 @@ console.log(newCode);
 
 ## API
 
-### `createPutnik(options?)`
-
-```js
-import {createPutnik} from 'putnik';
-
-const inMemoryPutnik = createPutnik();
-const persistentPutnik = createPutnik({
-    connection: '.putnik.db',
-});
-```
-
-Returns `{ parse, run, getAst, print, db }`.
-
-| option       | default      | description                          |
-|--------------|--------------|--------------------------------------|
-| `connection` | `':memory:'` | path to SQLite file, or `':memory:'` |
-
-***
-
 ### `parse(file, source)`
 
 Parses `source` with `@putout/babel` and writes every AST node into its typed table. Call once per file before `run`.
 
 ```js
-putnik.parse('src/index.js', 'const a = 1;');
+parse('src/index.js', 'const a = 1;');
 ```
 
 Each Babel node type gets its own table. Every row shares these base columns:
@@ -109,12 +88,12 @@ Type-specific columns: `kind` on `VariableDeclaration`, `name` on `Identifier`, 
 
 ***
 
-### `putnik(file, options)`
+### `putnik(file, source, options)`
 
 Report mode, does not mutate the DB:
 
 ```js
-const [code, places] = await putnik('src/index.js', {
+const [code, places] = await putnik('src/index.js', source, {
     plugins,
     fix: false,
 });
@@ -123,7 +102,7 @@ const [code, places] = await putnik('src/index.js', {
 fix mode, mutates the DB:
 
 ```js
-const [newCode, places] = await putnik('src/index.js', {
+const [newCode, places] = await putnik('src/index.js', source, {
     plugins,
     fix: true,
 });
@@ -140,7 +119,7 @@ The runner passes each row returned by `@select` as named parameters into `@fix`
 Reads all nodes for `file` from the DB, assembles the AST, and returns the printed source string via `@putout/printer`. Returns `''` if the file has not been parsed.
 
 ```js
-const code = putnik.print('src/index.js');
+const code = print('src/index.js');
 // 'let a = 1;\n'
 ```
 
