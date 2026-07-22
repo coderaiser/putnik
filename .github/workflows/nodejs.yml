@@ -28,7 +28,7 @@ jobs:
         uses: EndBug/add-and-commit@v10
         continue-on-error: true
         with:
-          message: "chore: redrun: actions: lint ☘️"
+          message: "chore: ${{ env.NAME }}: actions: lint ☘️"
       - name: Test
         run: redrun test
       - name: Coverage
@@ -40,7 +40,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: typos-action
         uses: crate-ci/typos@v1.0.4
-
   e2e:
     runs-on: ubuntu-latest
     steps:
