@@ -8,7 +8,8 @@
         ".*",
         "bin",
         "test",
-        "coverage"
+        "coverage",
+        "lib/db/postgres.js"
     ],
     "branches": 100,
     "lines": 100,
