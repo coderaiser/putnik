@@ -23,8 +23,6 @@ The key idea: **SQL indexes beat Babel traverse at scale**. A plugin that finds 
 npm i putnik
 ```
 
-`package.json` must have `"type": "module"`.
-
 ## Usage
 
 ```js
