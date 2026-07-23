@@ -64,7 +64,7 @@
     "try-catch": "^4.0.9"
   },
   "imports": {
-    "#test": "./lib/test/test.js"
+    "#test": "./test/create-test.js"
   },
   "publishConfig": {
     "access": "public"

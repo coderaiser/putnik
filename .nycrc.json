@@ -5,11 +5,10 @@
     "exclude": [
         "**/*.config.*",
         "**/*.spec.*",
-        "**/lib/**test.js",
         "**/turso.js",
         ".*",
         "lib/db/postgres.js",
-        "lib/db/test.js",
+        "lib/db/pglite.js",
         "bin",
         "test",
         "coverage"
