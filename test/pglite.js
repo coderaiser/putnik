@@ -122,6 +122,7 @@ test('pglite: transaction commits', async ({run, transaction, get, exec, deepEqu
         });
     });
     const row = await get('SELECT x FROM t');
+    
     const expected = {
         id: 1,
         x: 'hello',
