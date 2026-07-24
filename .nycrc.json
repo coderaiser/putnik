@@ -11,7 +11,8 @@
         "lib/db/pglite.js",
         "bin",
         "test",
-        "coverage"
+        "coverage",
+        "rules"
     ],
     "branches": 100,
     "lines": 100,
