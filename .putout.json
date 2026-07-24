@@ -1,0 +1,5 @@
+{
+    "plugins": [
+        "putnik-add-args"
+    ]
+}

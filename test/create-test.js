@@ -1,44 +1,42 @@
 import {test} from 'supertape';
 
-const isString = (a) => typeof a === 'string';
 const {assign} = Object;
 
 export const createTest = (createDb) => {
-    const extendedTest = test.extend({
-        all: (t) => async (rows, expected) => t.deepEqual(rows, expected),
-        get: (t) => async (row, expected) => t.deepEqual(row, expected),
-        insert: (t) => async (id, expected) => t.equal(id, expected),
-        upsert: (t) => async (row, expected) => t.equal(row?.value, expected),
-        dialect: (t) => async (value) => t.ok(isString(value) && value.length > 0),
-        primaryKey: (t) => async (value) => t.ok(isString(value) && value.length > 0),
-    });
+    const extendedTest = test.extend();
+    
+    const wrap = (fn) => async (t) => {
+        const db = await createDb();
+        const all = db.all.bind(db);
+        const get = db.get.bind(db);
+        const run = db.run.bind(db);
+        const exec = db.exec.bind(db);
+        const insert = db.insert.bind(db);
+        const end = db.end.bind(db);
+        const transaction = db.transaction.bind(db);
+        const upsert = db.upsert.bind(db);
+        
+        return fn({
+            ...t,
+            all,
+            get,
+            run,
+            exec,
+            insert,
+            upsert,
+            end,
+            transaction,
+        });
+    };
     
     const testFn = (name, fn) => {
-        return extendedTest(name, async (t) => {
-            const db = await createDb();
-            return fn({
-                ...t,
-                db,
-            });
-        });
+        return extendedTest(name, wrap(fn));
     };
     
     assign(testFn, {
         test: testFn,
-        skip: (name, fn) => extendedTest.skip(name, async (t) => {
-            const db = await createDb();
-            return fn({
-                ...t,
-                db,
-            });
-        }),
-        only: (name, fn) => extendedTest.only(name, async (t) => {
-            const db = await createDb();
-            return fn({
-                ...t,
-                db,
-            });
-        }),
+        skip: (name, fn) => extendedTest.skip(name, wrap(fn)),
+        only: (name, fn) => extendedTest.only(name, wrap(fn)),
     });
     
     return testFn;
