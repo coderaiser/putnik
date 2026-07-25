@@ -1,3 +1,34 @@
+2026.07.25, v1.0.2
+
+fix:
+- 217d4d0 read-ast: missing closing parenthesis
+- 3eb5fe2 named-to-positional: optional coalescing
+- 3bfc170 putnik: postgres
+
+feature:
+- 6d1237f putnik: node-sql-parser -> sql-parser-cst
+- d025036 putnik: views
+- 9e539ea add EXISTS query support to test db
+- 614da68 pglite: adapter and spec; improve createTest wrapper
+- f0106dd test: createTest factory; rewrite test.spec.js with operators
+- c8237ee test: createTest factory with db operators
+- d328f69 package.json: add #test import
+- bfdecee read-ast: spead up x10
+- 2f7801d putnik: parse: add transactions
+- a6c75a8 createIndexForField: rm
+- b32d63d putnik: _sources table: rm
+- 8ca99b3 putnik: turso
+- abd0199 db: prepare: add cache
+- 1e317e8 node-columns: simplify
+- 0e0bea7 putnik: simplify
+- 9b7cd2d putnik: postgres
+- 21ba238 putnik: simplify
+- ac02d4c putnik: test: coverage
+- a84fe64 readAst: grnerate from babel types
+- 50a514e putnik: reader: move out
+- 1b92467 putnik: db: move out
+- 807f87c putnik: simplify api
+
 2026.07.20, v1.0.1
 
 feature:
