@@ -48,10 +48,10 @@
     "just-snake-case": "^3.2.0",
     "libsql": "^0.5.29",
     "montag": "^2.0.1",
-    "node-sql-parser": "^5.4.0",
     "once": "^1.4.0",
     "postgres": "^3.4.9",
     "putout": "^42.10.0",
+    "sql-parser-cst": "^0.42.1",
     "try-to-catch": "^4.1.0"
   },
   "devDependencies": {
