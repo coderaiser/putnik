@@ -232,14 +232,11 @@ Because all files share one DB, a plugin can query across the whole project:
 
 ```js
 import {readFileSync} from 'node:fs';
-import {createPutnik} from 'putnik';
+import {putnik} from 'putnik';
 
-const putnik = createPutnik({
+const putnik = putnik({
     connection: '.putnik.db',
 });
-
-for (const file of files)
-    putnik.babelParse(file, readFileSync(file, 'utf8'));
 
 const unusedExports = {
     select: `
@@ -256,7 +253,7 @@ const unusedExports = {
     `,
 };
 
-const [, places] = await putnik(targetFile, {
+const [, places] = await putnik(targetFile, 'const a = "hello"', {
     plugins: [unusedExports],
 });
 ```
