@@ -1,4 +1,7 @@
 {
+    "rules": {
+        "remove-console": "off"
+    },
     "plugins": [
         "putnik-add-args"
     ]

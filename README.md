@@ -234,7 +234,7 @@ Because all files share one DB, a plugin can query across the whole project:
 import {readFileSync} from 'node:fs';
 import {putnik} from 'putnik';
 
-const putnik = putnik({
+const [code] = putnik({
     connection: '.putnik.db',
 });
 
