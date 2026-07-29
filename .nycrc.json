@@ -12,7 +12,8 @@
         "bin",
         "test",
         "coverage",
-        "rules"
+        "rules",
+        "example"
     ],
     "branches": 100,
     "lines": 100,
