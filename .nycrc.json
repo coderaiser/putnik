@@ -6,6 +6,7 @@
         "**/*.config.*",
         "**/*.spec.*",
         "**/turso.js",
+        "**/fixture",
         ".*",
         "lib/db/postgres.js",
         "lib/db/pglite.js",
