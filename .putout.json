@@ -1,8 +1,4 @@
 {
-    "plugins": [
-        "putnik"
-    ],
-    "ignore": [
-        "example"
-    ]
+    "plugins": ["putnik"],
+    "ignore": ["example"]
 }
