@@ -1,11 +1,11 @@
 {
-  "name": "putout-plugin-add-args",
+  "name": "putout-plugin-putnik",
   "version": "1.0.0",
   "type": "module",
   "author": "coderaiser <mnemonic.enemy@gmail.com> (https://github.com/coderaiser)",
   "description": "🐊Putout plugin adds ability to find and remove 'debugger' statement",
   "homepage": "https://github.com/coderaiser/putout/tree/master/packages/plugin-add-args#readme",
-  "main": "lib/add-args.js",
+  "main": "./lib/index.js",
   "release": false,
   "tag": false,
   "changelog": false,
@@ -37,7 +37,7 @@
     "eslint-plugin-putout": "^31.0.0",
     "madrun": "^13.0.0",
     "nodemon": "^3.0.1",
-    "redlint": "^6.0.0",
+    "redlint": "^6.9.2",
     "superc8": "^12.0.0"
   },
   "peerDependencies": {

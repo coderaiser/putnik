@@ -1,5 +1,8 @@
 {
     "plugins": [
-        "putnik-add-args"
+        "putnik"
+    ],
+    "ignore": [
+        "example"
     ]
 }
