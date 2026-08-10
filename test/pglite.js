@@ -1,6 +1,7 @@
 import {tryToCatch} from 'try-to-catch';
+
 import {createTest} from '#test';
-import {createDb} from './pglite.js';
+import {createDb} from '../lib/db/pglite.js';
 
 const test = createTest(createDb);
 
