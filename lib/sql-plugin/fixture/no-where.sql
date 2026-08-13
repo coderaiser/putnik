@@ -1,3 +1,7 @@
+-- @report
+SELECT 'test';
+
+-- @select
 SELECT id FROM VariableDeclaration WHERE kind = 'const';
 
 -- @fix
