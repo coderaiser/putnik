@@ -123,6 +123,8 @@ The runner passes each row returned by `@select` as named parameters into `@fix`
 Reads all nodes for `file` from the DB, assembles the AST, and returns the printed source string via `@putout/printer`. Returns `''` if the file has not been parsed.
 
 ```js
+import {print} from 'putout';
+
 const code = print('src/index.js');
 // 'let a = 1;\n'
 ```
@@ -139,7 +141,9 @@ const ast = putnik.getAst('src/index.js');
 
 ```js
 import {sql} from 'putnik';
+import {types} from 'putout';
 
+const {file} = types;
 const query = sql`SELECT id FROM VariableDeclaration WHERE file = ${file}`;
 ```
 

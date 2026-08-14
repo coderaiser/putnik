@@ -1,4 +1,7 @@
 {
+    "rules": {
+        "putout": "on"
+    },
     "plugins": ["putnik"],
     "ignore": ["example"]
 }
