@@ -10,7 +10,7 @@ export default {
     'fresh:lint': () => run('lint', '--fresh'),
     'lint:fresh': () => run('lint', '--fresh'),
     'fix:lint': () => run('lint', '--fix'),
-    'test': () => [env, `tape 'lib/**/*.spec.js' 'plugins/**/*/test/*.js' 'plugins/**/*.spec.js'`],
+    'test': () => [env, `tape 'lib/**/*.spec.js' 'lib/**/test/*.js' 'plugins/**/*/test/*.js' 'plugins/**/*.spec.js'`],
     'test:e2e': () => [env, `tape 'test/*.js'`],
     'watch:test': async () => [env, await run('watcher', `"${await cutEnv('test')}"`)],
     'watch:tape': () => 'nodemon -w lib --exec tape',
