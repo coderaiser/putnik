@@ -1,3 +1,17 @@
+2026.08.14, v1.2.0
+
+feature:
+- 99eff3e putnik: sql-plugin: add-id-to-select: coverage
+- c5f3d09 rules: add-id-to-select: add
+- 0055867 sql-plugin: columns — createHasColumn, hasIdColumn, hasStartLineColumn
+- e7e2ac9 runner: merge start_line/start_col into places
+- a238348 runner: apply sqlite conversion, RETURNING capture, transaction
+- 45ff7c5 putnic: convert-sqlite-to-postgres: add
+- 320f469 convert-sqlite-to-postgres plugin with lastInsertRowid rule
+- 6022cdf convert-postgres-to-sqlite plugin with withNamed rule
+- ad48f54 sql-plugin: extractSections
+- 7403073 putnik: putout-plugin-putout: single -> nested
+
 2026.07.29, v1.1.0
 
 feature:
