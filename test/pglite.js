@@ -14,7 +14,7 @@ test('pglite: all returns matching rows', async ({all, exec, run, deepEqual}) =>
     await run('INSERT INTO t (x) VALUES (:x)', {
         x: 'hello',
     });
-    const rows = await all('SELECT x FROM t WHERE x = :x', {
+    const rows = await all('SELECT id, x FROM t WHERE x = :x', {
         x: 'hello',
     });
     
@@ -42,7 +42,7 @@ test('pglite: get returns first row', async ({get, exec, run, deepEqual}) => {
     await run('INSERT INTO t (x) VALUES (:x)', {
         x: 'hello',
     });
-    const row = await get('SELECT x FROM t WHERE x = :x', {
+    const row = await get('SELECT id, x FROM t WHERE x = :x', {
         x: 'hello',
     });
     
@@ -94,7 +94,7 @@ test('pglite: upsert inserts new row', async ({upsert, exec, get, equal}) => {
         key: 'foo',
     });
     
-    equal(row, 'bar');
+    equal(row.value, 'bar');
 });
 
 test('pglite: upsert replaces existing row', async ({upsert, exec, get, equal}) => {
@@ -111,17 +111,17 @@ test('pglite: upsert replaces existing row', async ({upsert, exec, get, equal}) 
         key: 'foo',
     });
     
-    await equal(row, 'baz');
+    equal(row.value, 'baz');
 });
 
-test('pglite: transaction commits', async ({run, transaction, get, exec, deepEqual}) => {
+test('pglite: transaction commits', async ({transaction, get, exec, deepEqual}) => {
     await exec('CREATE TABLE IF NOT EXISTS t (id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, x TEXT)');
-    await transaction(async () => {
+    await transaction(async (run) => {
         await run('INSERT INTO t (x) VALUES (:x)', {
             x: 'hello',
         });
     });
-    const row = await get('SELECT x FROM t');
+    const row = await get('SELECT id, x FROM t');
     
     const expected = {
         id: 1,
