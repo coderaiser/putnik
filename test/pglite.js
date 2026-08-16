@@ -1,8 +1,8 @@
 import {tryToCatch} from 'try-to-catch';
-import {createTest} from '#test';
+import {createIntegrationTest} from '#test';
 import {createDb} from '../lib/db/pglite.js';
 
-const test = createTest(createDb);
+const test = createIntegrationTest(createDb);
 
 test('pglite: exec creates table', async ({exec, notOk}) => {
     const [error] = await tryToCatch(exec, 'CREATE TABLE IF NOT EXISTS t (id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, x TEXT)');

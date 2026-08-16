@@ -1,5 +1,10 @@
 import {createTest as createProcessorTest} from '@putout/test/processor';
-import {parse, transform, print} from '../putnik.js';
+
+import {
+    parse,
+    transform,
+    print,
+} from '../lib/putnik.js';
 
 const createLint = (options) => async (rawSource, {fix}) => {
     const name = 'fixture.js';
@@ -13,11 +18,10 @@ const createLint = (options) => async (rawSource, {fix}) => {
     return [processedSource, places];
 };
 
-export const createTest = (url, options) =>
-    createProcessorTest(url, {
-        ...options,
-        processorRunners: [{
-            isMatch: () => true,
-            lint: createLint(options),
-        }],
-    });
+export const createTest = (url, options) => createProcessorTest(url, {
+    ...options,
+    processorRunners: [{
+        isMatch: () => true,
+        lint: createLint(options),
+    }],
+});
