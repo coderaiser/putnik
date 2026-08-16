@@ -1,5 +1,4 @@
 import {createTest as createProcessorTest} from '@putout/test/processor';
-
 import {
     parse,
     transform,
@@ -9,10 +8,12 @@ import {
 const createLint = (options) => async (rawSource, {fix}) => {
     const name = 'fixture.js';
     const db = await parse(name, rawSource);
+    
     const places = await transform(name, db, {
         ...options,
         fix,
     });
+    
     const processedSource = fix ? await print(name, db) : rawSource;
     
     return [processedSource, places];
