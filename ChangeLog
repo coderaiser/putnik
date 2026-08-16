@@ -1,3 +1,26 @@
+2026.08.17, v1.3.0
+
+fix:
+- 601d8b3 putnik: check-report-has-message: coverage
+
+feature:
+- 7bfc776 putnik: plugin-postgres: move out to @putout/plugin-sql
+- aa91b0d test
+- c38c569 plugin-postgres: simplify
+- 6c8f9a0 convert-serial-to-identity: simplify
+- ac3506b convert-sequence-to-serial: simplify
+- 68ec21b plugin-postgresql: convert-serial-to-identity
+- ebd5043 plugin-postgresql: convert-sequence-to-serial
+- ea05986 putnik: convert-postgresql-to-sqlite
+- 0f728fa putnik: convert-sqlite-to-postgresql: rm
+- 8d1b9d4 convert-sqlite-to-postgres: last-insert-rowid: rm
+- 1bf9065 convert-postgres-to-sqlite: simplify
+- 26a59b7 putnik: convert-postgres-to-sqlite: identity
+- e88e87e apply-is-nan: add
+- df0a7aa check-report-has-message
+- 594e08e add-location-to-select: coverage
+- 50873e2 putnik: add-location-to-select: add
+
 2026.08.14, v1.2.0
 
 feature:
