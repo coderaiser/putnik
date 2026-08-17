@@ -1,3 +1,8 @@
+2026.08.17, v1.4.1
+
+feature:
+- 1835c7d putnik: convert-postgres-to-sqlite: apply-auto-increment: move out to @putout/plugin-sql
+
 2026.08.17, v1.4.0
 
 feature:
