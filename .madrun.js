@@ -6,7 +6,7 @@ const env = {
 };
 
 export default {
-    'lint': () => 'putout .',
+    'lint': () => 'redlint fix && putout .',
     'fresh:lint': () => run('lint', '--fresh'),
     'lint:fresh': () => run('lint', '--fresh'),
     'fix:lint': () => run('lint', '--fix'),
