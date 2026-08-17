@@ -1,3 +1,10 @@
+2026.08.18, v1.4.2
+
+feature:
+- 508199c putnik: convert-postgres-to-sqlite: move to @putout/plugin-sql
+- a834241 regexp -> ast
+- cff6451 sql-plugin: simplify
+
 2026.08.17, v1.4.1
 
 feature:
