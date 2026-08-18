@@ -1,19 +1,12 @@
--- @select
-SELECT id, start_line, start_col
-FROM   VariableDeclaration
-WHERE  file = :file
-AND    kind = 'const';
-
 -- @report
-SELECT 'Prefer let over const' AS message,
-       start_line AS line,
-       start_col  AS col
-FROM   VariableDeclaration
-WHERE  file = :file
-AND    kind = 'const';
+SELECT 'Prefer let over const';
+
+-- @select
+SELECT id 
+    FROM VariableDeclaration
+    WHERE  kind = 'const';
 
 -- @fix
 UPDATE VariableDeclaration
-SET    kind = 'let'
-WHERE  file = :file
-AND    kind = 'const';
+    SET    kind = 'let'
+    WHERE  kind = 'const';
