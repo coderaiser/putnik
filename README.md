@@ -52,11 +52,14 @@ const constPlugin = {
 };
 
 // report mode — returns [code, places], does not mutate
-const [code, places] = await putnik('src/index.js', [constPlugin]);
+const [code, places] = await putnik('src/index.js', {
+    plugins: [constPlugin],
+});
 
 // places: [{message: 'Prefer let over const', line: 1, col: 0}]
 // fix mode — mutates the DB, returns [newCode, places]
-const [newCode] = await putnik('src/index.js', [constPlugin], {
+const [newCode] = await putnik('src/index.js', {
+    plugins: [constPlugin],
     fix: true,
 });
 
