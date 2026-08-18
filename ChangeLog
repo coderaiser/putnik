@@ -1,3 +1,11 @@
+2026.08.18, v1.5.0
+
+feature:
+- 5758263 putnik: sql-plugin: rm start_col, start_line add no named
+- 69b13fb runner: handle broken queries
+- 308a63b runner: logs: add
+- d3ae4c6 plugins tests
+
 2026.08.18, v1.4.2
 
 feature:
