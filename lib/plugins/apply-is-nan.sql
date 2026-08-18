@@ -1,8 +1,6 @@
 -- @select
 SELECT
     bin.id,
-    bin.start_line,
-    bin.start_col,
     bin.parent_id,
     bin.parent_type,
     bin.parent_field,
