@@ -1,7 +1,7 @@
 import process from 'node:process';
 import {tryToCatch} from 'try-to-catch';
 import {test as supertape} from 'supertape';
-import {createIntegrationTest} from '#test';
+import {integrationTest} from '#test';
 import {createDb} from '../lib/db/turso.js';
 
 const {
@@ -12,7 +12,7 @@ const {
 if (!TURSO_URL)
     supertape.skip('turso integration: set TURSO_URL to run');
 
-const test = createIntegrationTest(() => createDb({
+const test = integrationTest(() => createDb({
     url: TURSO_URL,
     authToken: TURSO_AUTH_TOKEN,
 }));

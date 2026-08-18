@@ -21,7 +21,9 @@ const createLint = (options) => async (rawSource, {fix}) => {
 
 export const createTest = (url, options) => createProcessorTest(url, {
     ...options,
+    extension: 'js',
     processorRunners: [{
+        files: ['*'],
         isMatch: () => true,
         lint: createLint(options),
     }],
