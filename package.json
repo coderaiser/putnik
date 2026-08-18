@@ -51,6 +51,7 @@
     "just-snake-case": "^3.2.0",
     "libsql": "^0.5.29",
     "montag": "^2.0.1",
+    "obug": "^2.1.4",
     "once": "^1.4.0",
     "postgres": "^3.4.9",
     "putout": "^42.10.0",
