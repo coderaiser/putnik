@@ -15,7 +15,7 @@ JOIN Identifier arg_id
 WHERE bin.operator = '===';
 
 -- @report
-SELECT 'Prefer Number.isNaN over === NaN' AS message;
+SELECT 'Use "Number.isNaN()" instead of "==="' AS message;
 
 -- @fix
 DELETE FROM Identifier WHERE parent_id = :id AND name = 'NaN';
