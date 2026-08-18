@@ -2,7 +2,7 @@ import {test} from 'supertape';
 
 const {assign} = Object;
 
-export const integrationTest = (createDb) => {
+export const createE2ETest = (createDb) => {
     const extendedTest = test.extend();
     
     const wrap = (fn) => async (t) => {
