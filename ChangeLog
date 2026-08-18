@@ -1,3 +1,8 @@
+2026.08.18, v1.5.1
+
+feature:
+- d912a4a putnik: apply-is-nan: simplify
+
 2026.08.18, v1.5.0
 
 feature:
