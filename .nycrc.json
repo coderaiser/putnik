@@ -8,6 +8,7 @@
         "**/.*",
         "**/turso.js",
         "**/fixture",
+        "lib/plugins/*.js",
         "lib/db/postgres.js",
         "lib/db/pglite.js",
         "bin",
