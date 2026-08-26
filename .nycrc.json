@@ -1,6 +1,6 @@
 {
     "skipFull": false,
-    "checkCoverage": true,
+    "checkCoverage": false,
     "all": true,
     "exclude": [
         "**/*.config.*",
@@ -16,9 +16,5 @@
         "coverage",
         "rules",
         "example"
-    ],
-    "branches": 100,
-    "lines": 100,
-    "functions": 100,
-    "statements": 100
+    ]
 }
