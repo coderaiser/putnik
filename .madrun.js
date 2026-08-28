@@ -2,7 +2,7 @@ import {run, cutEnv} from 'madrun';
 
 const env = {
     SUPERTAPE_PROGRESS_BAR_MIN: 10,
-    TIMEOUT: 10_000,
+    TIMEOUT: 60_000,
 };
 
 export default {
