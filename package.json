@@ -4,6 +4,9 @@
   "type": "module",
   "description": "parse JavaScript to SQL",
   "main": "lib/putnik.js",
+  "bin": {
+    "putnik": "./bin/putnik.js"
+  },
   "scripts": {
     "lint": "madrun lint",
     "fresh:lint": "madrun fresh:lint",
@@ -47,6 +50,7 @@
     "@putout/babel": "^5.9.9",
     "@putout/plugin-sql": "^1.9.0",
     "@putout/processor-sql": "^1.0.0",
+    "fast-glob": "^3.3.3",
     "happy-sql": "^2.0.0",
     "just-snake-case": "^3.2.0",
     "libsql": "^0.5.29",
