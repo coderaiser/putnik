@@ -33,14 +33,32 @@ test('putnik: cli: run: fix writes transformed files back', async (t) => {
     t.end();
 });
 
-test('putnik: cli: run: no fix reports places and leaves files untouched', async (t) => {
+test('putnik: cli: run: no fix reports places', async (t) => {
+    const dir = await createDir();
+    const name = join(dir, 'a.js');
+    
+    await writeFile(name, 'const a = 1;\n');
+    
+    const {places} = await run({
+        pattern: join(dir, '*.js'),
+        fix: false,
+        plugins: PLUGINS,
+    });
+    
+    await rm(dir, {recursive: true, force: true});
+    
+    t.ok(places.length);
+    t.end();
+});
+
+test('putnik: cli: run: no fix leaves files untouched', async (t) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     const source = 'const a = 1;\n';
     
     await writeFile(name, source);
     
-    const {places} = await run({
+    await run({
         pattern: join(dir, '*.js'),
         fix: false,
         plugins: PLUGINS,
@@ -49,7 +67,7 @@ test('putnik: cli: run: no fix reports places and leaves files untouched', async
     const result = await readFile(name, 'utf8');
     await rm(dir, {recursive: true, force: true});
     
-    t.ok(places.length && result === source);
+    t.equal(result, source);
     t.end();
 });
 
@@ -94,20 +112,37 @@ test('putnik: cli: run: output uses putout dump formatter', async (t) => {
     t.end();
 });
 
-test('putnik: cli: run: no places yields empty output', async (t) => {
+test('putnik: cli: run: no places yields no places', async (t) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     
     await writeFile(name, 'let a = 1;\n');
     
-    const {places, output} = await run({
+    const {places} = await run({
         pattern: join(dir, '*.js'),
         fix: false,
         plugins: PLUGINS,
     });
     await rm(dir, {recursive: true, force: true});
     
-    t.ok(!places.length && output === '');
+    t.notOk(places.length);
+    t.end();
+});
+
+test('putnik: cli: run: no places yields empty output', async (t) => {
+    const dir = await createDir();
+    const name = join(dir, 'a.js');
+    
+    await writeFile(name, 'let a = 1;\n');
+    
+    const {output} = await run({
+        pattern: join(dir, '*.js'),
+        fix: false,
+        plugins: PLUGINS,
+    });
+    await rm(dir, {recursive: true, force: true});
+    
+    t.equal(output, '');
     t.end();
 });
 
@@ -129,7 +164,38 @@ test('putnik: cli: run: ignores node_modules by default', async (t) => {
     t.end();
 });
 
-test('putnik: cli: run: injectable fs keeps everything off disk', async (t) => {
+test('putnik: cli: run: injectable fs: fix writes to injected fs', async (t) => {
+    const files = new Map([
+        ['a.js', 'const a = 1;\n'],
+    ]);
+    
+    const fs = {
+        readFile: async (name) => {
+            if (!files.has(name))
+                throw Error(`ENOENT: ${name}`);
+            
+            return files.get(name);
+        },
+        writeFile: async (name, contents) => {
+            files.set(name, contents);
+        },
+    };
+    
+    const glob = async () => ['a.js'];
+    
+    await run({
+        pattern: 'a.js',
+        fix: true,
+        fs,
+        glob,
+        plugins: PLUGINS,
+    });
+    
+    t.equal(files.get('a.js'), 'let a = 1;\n');
+    t.end();
+});
+
+test('putnik: cli: run: injectable fs: reports places', async (t) => {
     const files = new Map([
         ['a.js', 'const a = 1;\n'],
     ]);
@@ -156,7 +222,7 @@ test('putnik: cli: run: injectable fs keeps everything off disk', async (t) => {
         plugins: PLUGINS,
     });
     
-    t.ok(places.length >= 0 && files.get('a.js') === 'let a = 1;\n');
+    t.ok(places.length);
     t.end();
 });
 
@@ -175,7 +241,7 @@ test('putnik: cli: main: sets exit code on unfixed places', async (t) => {
     t.end();
 });
 
-test('putnik: cli: main: fix mode clears exit code', async (t) => {
+test('putnik: cli: main: fix mode writes transformed file', async (t) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     
@@ -187,17 +253,32 @@ test('putnik: cli: main: fix mode clears exit code', async (t) => {
     const result = await readFile(name, 'utf8');
     await rm(dir, {recursive: true, force: true});
     
-    t.ok(result === 'let a = 1;\n' && !process.exitCode);
+    t.equal(result, 'let a = 1;\n');
     t.end();
 });
 
-test('putnik: cli: run: preserves comments on fix', async (t) => {
+test('putnik: cli: main: fix mode clears exit code', async (t) => {
+    const dir = await createDir();
+    const name = join(dir, 'a.js');
+    
+    await writeFile(name, 'const a = 1;\n');
+    
+    process.exitCode = 0;
+    
+    await main(['--fix', join(dir, '*.js')]);
+    await rm(dir, {recursive: true, force: true});
+    
+    t.notOk(process.exitCode);
+    t.end();
+});
+
+test('putnik: cli: run: preserves top comment on fix', async (t) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     
     await writeFile(name, '// top\nconst a = 1; // inline\n');
     
-    const {places} = await run({
+    await run({
         pattern: join(dir, '*.js'),
         fix: true,
         plugins: PLUGINS,
@@ -206,6 +287,25 @@ test('putnik: cli: run: preserves comments on fix', async (t) => {
     const result = await readFile(name, 'utf8');
     await rm(dir, {recursive: true, force: true});
     
-    t.ok(result.includes('// top') && result.includes('// inline'));
+    t.ok(result.includes('// top'));
+    t.end();
+});
+
+test('putnik: cli: run: preserves inline comment on fix', async (t) => {
+    const dir = await createDir();
+    const name = join(dir, 'a.js');
+    
+    await writeFile(name, '// top\nconst a = 1; // inline\n');
+    
+    await run({
+        pattern: join(dir, '*.js'),
+        fix: true,
+        plugins: PLUGINS,
+    });
+    
+    const result = await readFile(name, 'utf8');
+    await rm(dir, {recursive: true, force: true});
+    
+    t.ok(result.includes('// inline'));
     t.end();
 });
