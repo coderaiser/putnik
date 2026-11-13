@@ -46,7 +46,7 @@
   "dependencies": {
     "@babel/types": "^8.0.4",
     "@electric-sql/pglite": "^0.5.4",
-    "@libsql/client": "^0.17.4",
+    "@libsql/client": "^0.18.0",
     "@putout/babel": "^5.9.9",
     "@putout/plugin-sql": "^1.9.0",
     "@putout/processor-sql": "^1.0.0",
