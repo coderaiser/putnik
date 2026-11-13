@@ -1,3 +1,27 @@
+2026.11.14, v1.5.2
+
+fix:
+- 1c3fa34 putnik: roundtrip
+- 195ab98 putnik: where
+
+feature:
+- 77479eb putnik: sqlite: built-in
+- 807ce95 putnik: sql-parser-cst v0.44.1
+- 0303caf putnik: postgres v4.1.1
+- 81979f1 putnik: obug v3.0.0
+- ac3bfb1 putnik: @libsql/client v0.18.0
+- f828f32 putnik: improve comments support
+- f1a4e26 comments
+- 69e73f3 putnik: improve support of comments
+- 9e116a5 comments
+- d9bcd2d comments
+- 2f230e3 putnik: migrate where
+- f6ed4e4 putnik: as
+- 7c32780 putnik: happy-sql v2.0.0
+- 3dd9c7a detector: improve
+- ced7067 detector: improve
+- d73fd88 Detector: imperative
+
 2026.08.18, v1.5.1
 
 feature:
