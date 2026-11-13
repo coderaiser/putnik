@@ -57,7 +57,7 @@
     "montag": "^2.0.1",
     "obug": "^3.0.0",
     "once": "^1.4.0",
-    "postgres": "^3.4.9",
+    "postgres": "^4.1.1",
     "putout": "^42.10.0",
     "sql-parser-cst": "^0.42.1",
     "try-to-catch": "^4.1.0"
