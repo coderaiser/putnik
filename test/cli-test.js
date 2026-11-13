@@ -26,6 +26,12 @@ test('putnik: cli: run: fix writes transformed files back', async (t) => {
     
     await writeFile(name, 'const a = 1;\n');
     
+    await run({
+        pattern: join(dir, '*.js'),
+        fix: true,
+        plugins: PLUGINS,
+    });
+    
     const result = await readFile(name, 'utf8');
     await rm(dir, {
         recursive: true,
@@ -262,11 +268,13 @@ test('putnik: cli: run: injectable fs: reports places', async (t) => {
     t.end();
 });
 
-test('putnik: cli: main: sets exit code on unfixed places', async (t, {process}) => {
+test('putnik: cli: main: sets exit code on unfixed places', async (t) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     
     await writeFile(name, 'const a = 1;\n');
+    
+    process.exitCode = 0;
     
     await main([
         join(dir, '*.js'),
