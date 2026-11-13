@@ -71,6 +71,7 @@ test('putnik: cli: run: no fix leaves files untouched', async (t) => {
     });
     
     const result = await readFile(name, 'utf8');
+    
     await rm(dir, {
         recursive: true,
         force: true,
@@ -289,6 +290,7 @@ test('putnik: cli: main: fix mode writes transformed file', async (t) => {
     
     await main(['--fix', join(dir, '*.js')]);
     const result = await readFile(name, 'utf8');
+    
     await rm(dir, {
         recursive: true,
         force: true,
@@ -329,6 +331,7 @@ test('putnik: cli: run: preserves top comment on fix', async (t) => {
     });
     
     const result = await readFile(name, 'utf8');
+    
     await rm(dir, {
         recursive: true,
         force: true,
@@ -351,6 +354,7 @@ test('putnik: cli: run: preserves inline comment on fix', async (t) => {
     });
     
     const result = await readFile(name, 'utf8');
+    
     await rm(dir, {
         recursive: true,
         force: true,

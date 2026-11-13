@@ -48,6 +48,7 @@
     "@electric-sql/pglite": "^0.5.4",
     "@libsql/client": "^0.18.0",
     "@putout/babel": "^5.9.9",
+    "@putout/formatter-dump": "^7.0.0",
     "@putout/plugin-sql": "^1.9.0",
     "@putout/processor-sql": "^1.0.0",
     "fast-glob": "^3.3.3",
