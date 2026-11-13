@@ -3,5 +3,5 @@
         "putout": "on"
     },
     "plugins": ["putnik"],
-    "ignore": ["example"]
+    "ignore": ["example", "bench"]
 }

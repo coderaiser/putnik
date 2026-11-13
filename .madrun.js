@@ -20,5 +20,6 @@ export default {
     'watcher': () => 'nodemon -w test -w lib --exec',
     'coverage': async () => [env, `c8 ${await cutEnv('test')}`],
     'report': () => 'c8 report --reporter=lcov',
+    'bench': () => 'bun bench/bench.js',
     'postpublish': () => 'npm i -g',
 };

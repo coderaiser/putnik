@@ -9,5 +9,6 @@
 
 test
 coverage
+bench
 
 !README.md
