@@ -33,6 +33,7 @@ test('putnik: cli: run: fix writes transformed files back', async (t) => {
     });
     
     const result = await readFile(name, 'utf8');
+    
     await rm(dir, {
         recursive: true,
         force: true,
