@@ -35,6 +35,7 @@ export const run = async (overrides = {}) => {
         plugins = DEFAULT_PLUGINS,
         rules = {},
     } = overrides;
+    
     const filePaths = await glob(pattern, {
         ignore: ['**/node_modules/**'],
         absolute: true,
