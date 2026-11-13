@@ -1,8 +1,14 @@
-import {test} from 'supertape';
-import {mkdtemp, rm, readFile, writeFile, mkdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {tryToCatch} from 'try-to-catch';
+import process from 'node:process';
+import {
+    mkdtemp,
+    rm,
+    readFile,
+    writeFile,
+    mkdir,
+} from 'node:fs/promises';
+import {test, stub} from 'supertape';
 import {run, main} from '../bin/putnik.js';
 import {loadSqlPlugin} from '../lib/putnik.js';
 
@@ -20,14 +26,11 @@ test('putnik: cli: run: fix writes transformed files back', async (t) => {
     
     await writeFile(name, 'const a = 1;\n');
     
-    const {places} = await run({
-        pattern: join(dir, '*.js'),
-        fix: true,
-        plugins: PLUGINS,
-    });
-    
     const result = await readFile(name, 'utf8');
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.equal(result, 'let a = 1;\n');
     t.end();
@@ -45,7 +48,10 @@ test('putnik: cli: run: no fix reports places', async (t) => {
         plugins: PLUGINS,
     });
     
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.ok(places.length);
     t.end();
@@ -65,7 +71,10 @@ test('putnik: cli: run: no fix leaves files untouched', async (t) => {
     });
     
     const result = await readFile(name, 'utf8');
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.equal(result, source);
     t.end();
@@ -89,9 +98,15 @@ test('putnik: cli: run: multi-file fix transforms both files', async (t) => {
         readFile(a, 'utf8'),
         readFile(b, 'utf8'),
     ]);
-    await rm(dir, {recursive: true, force: true});
     
-    t.equal(aSource + bSource, 'let a = 1;\nlet b = 2;\n');
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
+    const result = aSource + bSource;
+    const expected = 'let a = 1;\nlet b = 2;\n';
+    
+    t.equal(result, expected);
     t.end();
 });
 
@@ -106,7 +121,11 @@ test('putnik: cli: run: output uses putout dump formatter', async (t) => {
         fix: false,
         plugins: PLUGINS,
     });
-    await rm(dir, {recursive: true, force: true});
+    
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.ok(output.includes('const-to-let') || output.includes('a.js'));
     t.end();
@@ -123,7 +142,11 @@ test('putnik: cli: run: no places yields no places', async (t) => {
         fix: false,
         plugins: PLUGINS,
     });
-    await rm(dir, {recursive: true, force: true});
+    
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.notOk(places.length);
     t.end();
@@ -140,7 +163,11 @@ test('putnik: cli: run: no places yields empty output', async (t) => {
         fix: false,
         plugins: PLUGINS,
     });
-    await rm(dir, {recursive: true, force: true});
+    
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.equal(output, '');
     t.end();
@@ -150,7 +177,9 @@ test('putnik: cli: run: ignores node_modules by default', async (t) => {
     const dir = await createDir();
     const modules = join(dir, 'node_modules');
     
-    await mkdir(modules, {recursive: true});
+    await mkdir(modules, {
+        recursive: true,
+    });
     await writeFile(join(modules, 'a.js'), 'const a = 1;\n');
     
     const {places} = await run({
@@ -158,7 +187,11 @@ test('putnik: cli: run: ignores node_modules by default', async (t) => {
         fix: false,
         plugins: PLUGINS,
     });
-    await rm(dir, {recursive: true, force: true});
+    
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.equal(places.length, 0);
     t.end();
@@ -176,12 +209,12 @@ test('putnik: cli: run: injectable fs: fix writes to injected fs', async (t) => 
             
             return files.get(name);
         },
-        writeFile: async (name, contents) => {
+        writeFile: (name, contents) => {
             files.set(name, contents);
         },
     };
     
-    const glob = async () => ['a.js'];
+    const glob = stub().resolves(['a.js']);
     
     await run({
         pattern: 'a.js',
@@ -190,8 +223,10 @@ test('putnik: cli: run: injectable fs: fix writes to injected fs', async (t) => 
         glob,
         plugins: PLUGINS,
     });
+    const result = files.get('a.js');
+    const expected = 'let a = 1;\n';
     
-    t.equal(files.get('a.js'), 'let a = 1;\n');
+    t.equal(result, expected);
     t.end();
 });
 
@@ -207,12 +242,12 @@ test('putnik: cli: run: injectable fs: reports places', async (t) => {
             
             return files.get(name);
         },
-        writeFile: async (name, contents) => {
+        writeFile: (name, contents) => {
             files.set(name, contents);
         },
     };
     
-    const glob = async () => ['a.js'];
+    const glob = stub().resolves(['a.js']);
     
     const {places} = await run({
         pattern: 'a.js',
@@ -226,16 +261,19 @@ test('putnik: cli: run: injectable fs: reports places', async (t) => {
     t.end();
 });
 
-test('putnik: cli: main: sets exit code on unfixed places', async (t) => {
+test('putnik: cli: main: sets exit code on unfixed places', async (t, {process}) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     
     await writeFile(name, 'const a = 1;\n');
     
-    const {exitCode} = process;
-    
-    await main([join(dir, '*.js')]);
-    await rm(dir, {recursive: true, force: true});
+    await main([
+        join(dir, '*.js'),
+    ]);
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.equal(process.exitCode, 1);
     t.end();
@@ -251,7 +289,10 @@ test('putnik: cli: main: fix mode writes transformed file', async (t) => {
     
     await main(['--fix', join(dir, '*.js')]);
     const result = await readFile(name, 'utf8');
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.equal(result, 'let a = 1;\n');
     t.end();
@@ -266,7 +307,10 @@ test('putnik: cli: main: fix mode clears exit code', async (t) => {
     process.exitCode = 0;
     
     await main(['--fix', join(dir, '*.js')]);
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
     t.notOk(process.exitCode);
     t.end();
@@ -285,9 +329,12 @@ test('putnik: cli: run: preserves top comment on fix', async (t) => {
     });
     
     const result = await readFile(name, 'utf8');
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
-    t.ok(result.includes('// top'));
+    t.match(result, '// top');
     t.end();
 });
 
@@ -304,8 +351,11 @@ test('putnik: cli: run: preserves inline comment on fix', async (t) => {
     });
     
     const result = await readFile(name, 'utf8');
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
     
-    t.ok(result.includes('// inline'));
+    t.match(result, '// inline');
     t.end();
 });

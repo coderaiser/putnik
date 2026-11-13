@@ -5,7 +5,7 @@
   "description": "parse JavaScript to SQL",
   "main": "lib/putnik.js",
   "bin": {
-    "putnik": "./bin/putnik.js"
+    "putnik": "bin/putnik.js"
   },
   "scripts": {
     "lint": "madrun lint",

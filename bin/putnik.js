@@ -1,5 +1,9 @@
 #!/usr/bin/env node
-import {readFile as readFileFs, writeFile as writeFileFs} from 'node:fs/promises';
+
+import {
+    readFile as readFileFs,
+    writeFile as writeFileFs,
+} from 'node:fs/promises';
 import process from 'node:process';
 import {pathToFileURL} from 'node:url';
 import globFS from 'fast-glob';
@@ -22,14 +26,15 @@ const realFS = {
     writeFile: (name, contents) => writeFileFs(name, contents),
 };
 
-export const run = async ({
-    pattern = '**/*.js',
-    fix = false,
-    fs = realFS,
-    glob = globFS,
-    plugins = DEFAULT_PLUGINS,
-    rules = {},
-} = {}) => {
+export const run = async (overrides = {}) => {
+    const {
+        pattern = '**/*.js',
+        fix = false,
+        fs = realFS,
+        glob = globFS,
+        plugins = DEFAULT_PLUGINS,
+        rules = {},
+    } = overrides;
     const filePaths = await glob(pattern, {
         ignore: ['**/node_modules/**'],
         absolute: true,
@@ -90,4 +95,3 @@ const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 
 if (isMain)
     await main();
-
