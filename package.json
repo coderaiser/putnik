@@ -53,7 +53,7 @@
     "@putout/plugin-sql": "^1.9.0",
     "@putout/processor-sql": "^1.0.0",
     "fast-glob": "^3.3.3",
-    "happy-sql": "^2.0.0",
+    "happy-sql": "^2.4.1",
     "just-snake-case": "^3.2.0",
     "montag": "^2.0.1",
     "obug": "^3.0.0",
