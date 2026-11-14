@@ -1,3 +1,11 @@
+2026.11.14, v1.5.3
+
+fix:
+- d7d289e putnik: sql-plugin: add-file-to-where: scope queries without WHERE
+
+feature:
+- dc934dd putnik: simplify
+
 2026.11.14, v1.5.2
 
 fix:
