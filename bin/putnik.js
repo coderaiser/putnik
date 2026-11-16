@@ -17,6 +17,8 @@ import {
 
 const pluginConvertConstToLet = loadSqlPlugin(new URL('../lib/plugins/convert-const-to-let.sql', import.meta.url).pathname);
 
+const DEFAULT_PATTERN = '**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}';
+
 const DEFAULT_PLUGINS = [
     ['convert-const-to-let', pluginConvertConstToLet],
 ];
@@ -28,7 +30,7 @@ const realFS = {
 
 export const run = async (overrides = {}) => {
     const {
-        pattern = '**/*.js',
+        pattern = DEFAULT_PATTERN,
         fix = false,
         fs = realFS,
         glob = globFS,

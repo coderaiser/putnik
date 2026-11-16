@@ -233,6 +233,24 @@ Plugins must use the common subset supported by both SQLite and Postgres. `valid
 | `true` / `false`  | `1` / `0`                         |
 | `LATERAL`         | correlated subquery               |
 
+## Rules
+
+The rules are in `lib/plugins/`. The names are the names of the rules of Putout.
+
+| Rule | Scope | Needs `Binding` | Limits |
+|---|---|---|---|
+| `apply-is-nan` | file | no | Only `==` of `NaN` on the right with an identifier, member, call, or `this` on the left |
+| `remove-debugger` | file | no | |
+| `remove-console` | file | yes | Skips a file that declares a binding named `console` |
+| `remove-empty-block` | file | no | Only a block in a statement list. A block of `if`, `else`, loops stays |
+| `remove-duplicate-keys` | file | no | Keys: name, string, `[a.b]`, spread of a name |
+| `merge-duplicate-imports` | file | no | Type and value imports are merged one by one. A namespace import and two default imports are not merged. A comment of a removed import stays on the next node |
+| `convert-const-to-let` | file | yes | Skips `export const` and `declare const` |
+| `remove-unused-variables` | file | yes | Only a declarator with an identifier |
+| `remove-unused-exports` | project | no | Only `export const`, `export function`, `export class`, `export {a}`, and `export default function a`. Types are kept. A destructuring export is kept. Packages that other projects import MUST NOT use this rule: it removes the exports that only other projects use |
+
+`remove-unused-exports` follows the imports `import`, `export from`, `export *`, `import()`, and `require()` of the parsed files. A source with no extension (`./a`) finds `./a.js`, `./a.ts`, and `./a/index.js`.
+
 ## Cross-file transforms
 
 Because all files share one DB, a plugin can query across the whole project:

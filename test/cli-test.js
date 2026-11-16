@@ -399,3 +399,45 @@ test('putnik: cli: run: plugin that needs scope sees Binding', async (t) => {
     t.equal(places.length, 1);
     t.end();
 });
+
+test('putnik: cli: run: default pattern has TypeScript files', async (t) => {
+    const glob = stub().resolves([]);
+    
+    await run({
+        glob,
+        plugins: PLUGINS,
+    });
+    
+    const [[pattern]] = glob.args;
+    
+    t.match(pattern, '{js,mjs,cjs,jsx,ts,mts,cts,tsx}');
+    t.end();
+});
+
+test('putnik: cli: run: fixes a TypeScript file', async (t) => {
+    const files = new Map([
+        ['a.ts', 'const a: number = 1;\n'],
+    ]);
+    
+    const fs = {
+        readFile: async (name) => files.get(name),
+        writeFile: (name, contents) => {
+            files.set(name, contents);
+        },
+    };
+    
+    const glob = stub().resolves(['a.ts']);
+    
+    await run({
+        fix: true,
+        fs,
+        glob,
+        plugins: PLUGINS,
+    });
+    
+    const result = files.get('a.ts');
+    const expected = 'let a: number = 1;\n';
+    
+    t.equal(result, expected);
+    t.end();
+});
