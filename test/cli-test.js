@@ -12,10 +12,10 @@ import {test, stub} from 'supertape';
 import {run, main} from '../bin/putnik.js';
 import {loadSqlPlugin} from '../lib/putnik.js';
 
-const pluginConvertConstToLet = loadSqlPlugin(new URL('../lib/plugins/convert-const-to-let.sql', import.meta.url).pathname);
+const pluginConstToLet = loadSqlPlugin(new URL('../lib/sql-plugin/fixture/const-to-let.sql', import.meta.url).pathname);
 
 const PLUGINS = [
-    ['convert-const-to-let', pluginConvertConstToLet],
+    ['const-to-let', pluginConstToLet],
 ];
 
 const createDir = async () => mkdtemp(join(tmpdir(), 'putnik-cli-'));
@@ -135,7 +135,7 @@ test('putnik: cli: run: output uses putout dump formatter', async (t) => {
         force: true,
     });
     
-    t.ok(output.includes('convert-const-to-let') || output.includes('a.js'));
+    t.ok(output.includes('const-to-let') || output.includes('a.js'));
     t.end();
 });
 
@@ -273,7 +273,7 @@ test('putnik: cli: main: sets exit code on unfixed places', async (t) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     
-    await writeFile(name, 'const a = 1;\n');
+    await writeFile(name, 'const a = 1;\na = 2;\n');
     
     process.exitCode = 0;
     
@@ -293,7 +293,7 @@ test('putnik: cli: main: fix mode writes transformed file', async (t) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     
-    await writeFile(name, 'const a = 1;\n');
+    await writeFile(name, 'const a = 1;\na = 2;\n');
     
     process.exitCode = 0;
     
@@ -305,7 +305,7 @@ test('putnik: cli: main: fix mode writes transformed file', async (t) => {
         force: true,
     });
     
-    t.equal(result, 'let a = 1;\n');
+    t.equal(result, 'let a = 1;\n\na = 2;\n');
     t.end();
 });
 
@@ -313,7 +313,7 @@ test('putnik: cli: main: fix mode clears exit code', async (t) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     
-    await writeFile(name, 'const a = 1;\n');
+    await writeFile(name, 'const a = 1;\na = 2;\n');
     
     process.exitCode = 0;
     
