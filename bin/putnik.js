@@ -15,10 +15,10 @@ import {
     loadSqlPlugin,
 } from '../lib/putnik.js';
 
-const pluginConstToLet = loadSqlPlugin(new URL('../lib/plugins/const-to-let.sql', import.meta.url).pathname);
+const pluginConvertConstToLet = loadSqlPlugin(new URL('../lib/plugins/convert-const-to-let.sql', import.meta.url).pathname);
 
 const DEFAULT_PLUGINS = [
-    ['const-to-let', pluginConstToLet],
+    ['convert-const-to-let', pluginConvertConstToLet],
 ];
 
 const realFS = {

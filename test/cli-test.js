@@ -12,10 +12,10 @@ import {test, stub} from 'supertape';
 import {run, main} from '../bin/putnik.js';
 import {loadSqlPlugin} from '../lib/putnik.js';
 
-const pluginConstToLet = loadSqlPlugin(new URL('../lib/plugins/const-to-let.sql', import.meta.url).pathname);
+const pluginConvertConstToLet = loadSqlPlugin(new URL('../lib/plugins/convert-const-to-let.sql', import.meta.url).pathname);
 
 const PLUGINS = [
-    ['const-to-let', pluginConstToLet],
+    ['convert-const-to-let', pluginConvertConstToLet],
 ];
 
 const createDir = async () => mkdtemp(join(tmpdir(), 'putnik-cli-'));
@@ -135,7 +135,7 @@ test('putnik: cli: run: output uses putout dump formatter', async (t) => {
         force: true,
     });
     
-    t.ok(output.includes('const-to-let') || output.includes('a.js'));
+    t.ok(output.includes('convert-const-to-let') || output.includes('a.js'));
     t.end();
 });
 

@@ -204,7 +204,7 @@ WHERE file = :file AND kind = 'const';
 ```js
 import {loadSqlPlugin} from 'putnik';
 
-const plugin = loadSqlPlugin('./plugins/const-to-let.sql');
+const plugin = loadSqlPlugin('./plugins/convert-const-to-let.sql');
 ```
 
 ### Boolean columns
