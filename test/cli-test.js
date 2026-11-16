@@ -1,5 +1,5 @@
 import {tmpdir} from 'node:os';
-import {join} from 'node:path';
+import {join, dirname} from 'node:path';
 import process from 'node:process';
 import {
     mkdtemp,
@@ -9,8 +9,16 @@ import {
     mkdir,
 } from 'node:fs/promises';
 import {test, stub} from 'supertape';
-import {run, main} from '../bin/putnik.js';
-import {loadSqlPlugin} from '../lib/putnik.js';
+import {tryToCatch} from 'try-to-catch';
+import {
+    run,
+    runParse,
+    runFind,
+    runTransform,
+    runPrint,
+    main,
+} from '../bin/putnik.js';
+import {loadSqlPlugin, parse} from '../lib/putnik.js';
 
 const pluginConstToLet = loadSqlPlugin(new URL('../lib/sql-plugin/fixture/const-to-let.sql', import.meta.url).pathname);
 
@@ -293,7 +301,7 @@ test('putnik: cli: main: fix mode writes transformed file', async (t) => {
     const dir = await createDir();
     const name = join(dir, 'a.js');
     
-    await writeFile(name, 'const a = 1;\na = 2;\n');
+    await writeFile(name, 'debugger;\nfoo();\n');
     
     process.exitCode = 0;
     
@@ -305,7 +313,7 @@ test('putnik: cli: main: fix mode writes transformed file', async (t) => {
         force: true,
     });
     
-    t.equal(result, 'let a = 1;\n\na = 2;\n');
+    t.equal(result, 'foo();\n');
     t.end();
 });
 
@@ -410,7 +418,7 @@ test('putnik: cli: run: default pattern has TypeScript files', async (t) => {
     
     const [[pattern]] = glob.args;
     
-    t.match(pattern, '{js,mjs,cjs,jsx,ts,mts,cts,tsx}');
+    t.match(pattern, '{js,mjs,cjs,jsx,ts,mts,cts,tsx,json}');
     t.end();
 });
 
@@ -437,6 +445,438 @@ test('putnik: cli: run: fixes a TypeScript file', async (t) => {
     
     const result = files.get('a.ts');
     const expected = 'let a: number = 1;\n';
+    
+    t.equal(result, expected);
+    t.end();
+});
+
+const createProject = async (files) => {
+    const dir = await createDir();
+    
+    for (const [name, source] of Object.entries(files))
+        await writeFile(join(dir, name), source);
+    
+    return {
+        dir,
+        database: join(dir, '.putnik', 'putnik.db'),
+        pattern: join(dir, '*.js'),
+        remove: () => rm(dir, {
+            recursive: true,
+            force: true,
+        }),
+    };
+};
+
+test('putnik: cli: runParse: returns the count of files', async (t) => {
+    const {
+        database,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'let a = 1;\n',
+        'b.js': 'let b = 1;\n',
+    });
+    
+    const {filesCount} = await runParse({
+        database,
+        pattern,
+    });
+    
+    await remove();
+    
+    t.equal(filesCount, 2);
+    t.end();
+});
+
+test('putnik: cli: runFind: reports the places of the database', async (t) => {
+    const {
+        database,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\n',
+    });
+    
+    await runParse({
+        database,
+        pattern,
+    });
+    
+    const {places} = await runFind({
+        database,
+    });
+    
+    await remove();
+    
+    t.equal(places.length, 1);
+    t.end();
+});
+
+test('putnik: cli: runFind: does not change the files', async (t) => {
+    const {
+        dir,
+        database,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\n',
+    });
+    
+    await runParse({
+        database,
+        pattern,
+    });
+    await runFind({
+        database,
+    });
+    
+    const result = await readFile(join(dir, 'a.js'), 'utf8');
+    
+    await remove();
+    
+    t.equal(result, 'debugger;\n');
+    t.end();
+});
+
+test('putnik: cli: runTransform: does not write the files', async (t) => {
+    const {
+        dir,
+        database,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\nfoo();\n',
+    });
+    
+    await runParse({
+        database,
+        pattern,
+    });
+    await runTransform({
+        database,
+    });
+    
+    const result = await readFile(join(dir, 'a.js'), 'utf8');
+    
+    await remove();
+    
+    t.equal(result, 'debugger;\nfoo();\n');
+    t.end();
+});
+
+test('putnik: cli: runPrint: writes the transformed files', async (t) => {
+    const {
+        dir,
+        database,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\nfoo();\n',
+    });
+    
+    await runParse({
+        database,
+        pattern,
+    });
+    await runTransform({
+        database,
+    });
+    await runPrint({
+        database,
+    });
+    
+    const result = await readFile(join(dir, 'a.js'), 'utf8');
+    
+    await remove();
+    
+    t.equal(result, 'foo();\n');
+    t.end();
+});
+
+test('putnik: cli: runPrint: writes only the changed files', async (t) => {
+    const {
+        dir,
+        database,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\nfoo();\n',
+        'b.js': 'bar(  1 );\n',
+    });
+    
+    await runParse({
+        database,
+        pattern,
+    });
+    await runTransform({
+        database,
+    });
+    
+    const {files} = await runPrint({
+        database,
+    });
+    
+    const result = await readFile(join(dir, 'b.js'), 'utf8');
+    
+    await remove();
+    const expected = [[
+        join(dir, 'a.js'),
+    ], 'bar(  1 );\n'];
+    
+    t.deepEqual([files, result], expected);
+    t.end();
+});
+
+test('putnik: cli: runPrint: second find reports nothing', async (t) => {
+    const {
+        database,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\nfoo();\n',
+    });
+    
+    await runParse({
+        database,
+        pattern,
+    });
+    await runTransform({
+        database,
+    });
+    await runPrint({
+        database,
+    });
+    
+    const {places} = await runFind({
+        database,
+    });
+    
+    await remove();
+    const result = places;
+    const expected = [];
+    
+    t.deepEqual(result, expected);
+    t.end();
+});
+
+test('putnik: cli: runPrint: the file changed on the disk after parse', async (t) => {
+    const {
+        dir,
+        database,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\nfoo();\n',
+    });
+    
+    await runParse({
+        database,
+        pattern,
+    });
+    await runTransform({
+        database,
+    });
+    await writeFile(join(dir, 'a.js'), 'debugger;\nbar();\n');
+    
+    const [error] = await tryToCatch(runPrint, {
+        database,
+    });
+    
+    await remove();
+    
+    t.match(error.message, 'is changed on the disk after');
+    t.end();
+});
+
+test('putnik: cli: runFind: the database has no files', async (t) => {
+    const {
+        database,
+        pattern,
+        remove,
+    } = await createProject({});
+    
+    await runParse({
+        database,
+        pattern,
+    });
+    
+    const [error] = await tryToCatch(runFind, {
+        database,
+    });
+    
+    await remove();
+    
+    t.match(error.message, `run 'putnik parse'`);
+    t.end();
+});
+
+test('putnik: cli: runFind: the database has no bindings', async (t) => {
+    const {
+        dir,
+        database,
+        remove,
+    } = await createProject({});
+    
+    await mkdir(dirname(database), {
+        recursive: true,
+    });
+    
+    const db = await parse(join(dir, 'a.js'), 'let a = 1;\n', {
+        database,
+    });
+    
+    await db.end();
+    
+    const [error] = await tryToCatch(runFind, {
+        database,
+    });
+    
+    await remove();
+    
+    t.match(error.message, `no 'Binding'`);
+    t.end();
+});
+
+test('putnik: cli: main: parse, find, transform, print with --file', async (t) => {
+    const {
+        dir,
+        database,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\nfoo();\n',
+    });
+    
+    const file = `--file=${database}`;
+    
+    await main(['parse', pattern, file]);
+    await main(['find', file]);
+    
+    const {exitCode} = process;
+    
+    process.exitCode = 0;
+    
+    await main(['transform', file]);
+    await main(['print', file]);
+    
+    const result = await readFile(join(dir, 'a.js'), 'utf8');
+    
+    await remove();
+    const expected = [1, 'foo();\n'];
+    
+    t.deepEqual([exitCode, result], expected);
+    t.end();
+});
+
+test('putnik: cli: main: parse reads .putnik.toml', async (t) => {
+    const {
+        dir,
+        database,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\nfoo();\n',
+    });
+    
+    await writeFile(join(dir, '.putnik.toml'), `file = "${database}"\ninclude = ["${join(dir, '*.js')}"]\n`);
+    
+    await main(['parse'], dir);
+    await main(['transform'], dir);
+    await main(['print'], dir);
+    
+    const result = await readFile(join(dir, 'a.js'), 'utf8');
+    
+    await remove();
+    
+    t.equal(result, 'foo();\n');
+    t.end();
+});
+
+test('putnik: cli: main: parse without a database', async (t) => {
+    const {
+        dir,
+        pattern,
+        remove,
+    } = await createProject({
+        'a.js': 'debugger;\n',
+    });
+    
+    const [error] = await tryToCatch(main, ['parse', pattern], dir);
+    
+    await remove();
+    
+    t.match(error.message, `Specify '--file'`);
+    t.end();
+});
+
+test('putnik: cli: main: no arguments prints usage', async (t) => {
+    const error = stub();
+    const original = console.error;
+    
+    console.error = error;
+    await main([]);
+    console.error = original;
+    
+    process.exitCode = 0;
+    
+    t.calledWith(error, [`Usage: putnik [--fix] <pattern>
+       putnik parse [<pattern>] [--file=<path> | --url=<postgres url>]
+       putnik find | transform | print [--file=<path> | --url=<postgres url>]`]);
+    t.end();
+});
+
+test('putnik: cli: run: package.json main is an entry', async (t) => {
+    const dir = await createDir();
+    const cwd = join(dir, 'a.js');
+    const plugin = loadSqlPlugin(new URL('../lib/plugins/remove-unused-exports.sql', import.meta.url).pathname);
+    
+    await writeFile(cwd, 'export const a = 1;\n');
+    await writeFile(join(dir, 'b.js'), 'export const b = 1;\n');
+    await writeFile(join(dir, 'package.json'), '{"main": "./a.js"}');
+    
+    const {places} = await run({
+        pattern: join(dir, '*.{js,json}'),
+        plugins: [
+            ['remove-unused-exports', plugin],
+        ],
+    });
+    
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
+    
+    const files = [];
+    
+    for (const {file} of places)
+        files.push(file);
+    
+    const expected = [
+        join(dir, 'b.js'),
+    ];
+    
+    t.deepEqual(files, expected);
+    t.end();
+});
+
+test('putnik: cli: run: default rules: let to const and const to let', async (t) => {
+    const dir = await createDir();
+    const name = join(dir, 'a.js');
+    
+    await writeFile(name, 'let a = 1;\nconst b = 1;\n\nb = 2;\nconsole.log(a, b);\n');
+    
+    await run({
+        fix: true,
+        pattern: join(dir, '*.js'),
+    });
+    
+    const result = await readFile(name, 'utf8');
+    
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
+    
+    const expected = 'const a = 1;\nlet b = 1;\n\nb = 2;\n';
     
     t.equal(result, expected);
     t.end();

@@ -248,9 +248,46 @@ The rules are in `lib/plugins/`. The names are the names of the rules of Putout.
 | `convert-const-to-let` | file | yes | Skips `export const` and `declare const` |
 | `convert-let-to-const` | file | yes | Skips `declare let`, a `let` without init, a declaration where one declarator is reassigned, and a loop counter |
 | `remove-unused-variables` | file | yes | Only a declarator with an identifier |
-| `remove-unused-exports` | project | no | Only `export const`, `export function`, `export class`, `export {a}`, and `export default function a`. Types are kept. A destructuring export is kept. Packages that other projects import MUST NOT use this rule: it removes the exports that only other projects use |
+| `remove-unused-exports` | project | no | Only `export const`, `export function`, `export class`, `export {a}`, and `export default function a`. Types are kept. A destructuring export is kept. A file that `package.json` names as an entry keeps all its exports |
 
 `remove-unused-exports` follows the imports `import`, `export from`, `export *`, `import()`, and `require()` of the parsed files. A source with no extension (`./a`) finds `./a.js`, `./a.ts`, and `./a/index.js`.
+
+The CLI runs all rules.
+
+The entries of a package are the files that `main`, `module`, `types`, `typings`, `bin`, and `exports` of a `package.json` name. A `*` in `exports` matches any text, as in Node.js. `parse` reads each `package.json` of the pattern.
+
+## Commands
+
+```
+putnik [--fix] '<pattern>'
+putnik parse [<pattern>] [--file=<path> | --url=<postgres url>]
+putnik find [--file=<path> | --url=<postgres url>]
+putnik transform [--file=<path> | --url=<postgres url>]
+putnik print [--file=<path> | --url=<postgres url>]
+```
+
+`putnik '<pattern>'` needs a pattern. It parses the files in memory, runs all rules, and (with `--fix`) writes the changed files.
+
+The four commands work on a database that stays between the commands:
+
+- `parse` reads the `js`, `mjs`, `cjs`, `jsx`, `ts`, `mts`, `cts`, `tsx`, and `json` files of the pattern (not in `node_modules`) into the database.
+- `find` runs all rules on the database and reports the places. The exit code is 1 when there are places.
+- `transform` runs all rules with fix on the database. It does not write the files.
+- `print` writes the files that `transform` changed. It does not write the other files. It stops when a file changed on the disk after `parse`.
+
+`parse` parses only the files whose hash changed, and removes the rows of the files that are gone. The database is rebuilt when the version of putnik, the columns, or the need of `Binding` changes.
+
+## `.putnik.toml`
+
+The commands read `.putnik.toml` in the current directory. A flag overrides a key. Without the file, `--file` or `--url` is required.
+
+```toml
+file = "node_modules/.cache/putnik/putnik.db"
+include = ["**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,json}"]
+ignore = ["**/node_modules/**"]
+```
+
+`url = "postgresql://localhost/putnik"` selects Postgres in place of `file`. The `json` and `toml` files are stored as the object expression that `@putout/processor-json` and `@putout/processor-toml` make, and `print` writes them with the options of `@putout/cli-process-file/printer`.
 
 ## Cross-file transforms
 
