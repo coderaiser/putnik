@@ -1,11 +1,6 @@
-import {spawn} from 'node:child_process';
-import {mkdtempSync, rmSync} from 'node:fs';
-import {tmpdir} from 'node:os';
-import {join} from 'node:path';
-import {createConnection} from 'node:net';
-import {setTimeout} from 'node:timers';
 import {test} from 'supertape';
-import {createDb} from '../lib/db/postgres.js';
+import {tryToCatch} from 'try-to-catch';
+import {startPostgres} from './lib/start-postgres.js';
 
 test('postgres: createDb connects', async (t) => {
     const {db, stopPostgres} = await startPostgres();
@@ -17,51 +12,91 @@ test('postgres: createDb connects', async (t) => {
     t.end();
 });
 
-const startPostgres = async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'putnik-pg-'));
-    const port = 5433 + Math.floor(Math.random() * 1000);
-    
-    const proc = spawn('pgsqlite', [
-        '--database',
-        join(dir, 'test.db'),
-        '--port',
-        String(port),
-    ]);
-    
-    await waitForPort(port);
-    const db = await createDb(`postgresql://localhost:${port}/test`);
-    
-    const stopPostgres = async () => {
-        await db.end();
-        proc.kill();
-        rmSync(dir, {
-            recursive: true,
-            force: true,
-        });
-    };
-    
-    return {
-        db,
-        stopPostgres,
-    };
-};
+const createTable = (db) => db.exec('CREATE TABLE t (id INTEGER PRIMARY KEY, x TEXT)');
 
-const waitForPort = (port) => new Promise((resolve, reject) => {
-    const start = Date.now();
-    const check = () => {
-        const sock = createConnection(port, 'localhost');
-        
-        sock.on('connect', () => {
-            sock.destroy();
-            resolve();
-        });
-        sock.on('error', () => {
-            if (Date.now() - start > 5000)
-                return reject(Error('pgsqlite timeout'));
-            
-            setTimeout(check, 100);
-        });
-    };
+test('postgres: upsert inserts a new row', async (t) => {
+    const {db, stopPostgres} = await startPostgres();
     
-    check();
+    await createTable(db);
+    await db.upsert('t', 'id', {
+        id: 1,
+        x: 'a',
+    });
+    
+    const rows = await db.all('SELECT id, x FROM t');
+    
+    await stopPostgres();
+    
+    const expected = [{
+        id: 1,
+        x: 'a',
+    }];
+    
+    t.deepEqual(rows, expected);
+    t.end();
+});
+
+test('postgres: upsert replaces an existing row', async (t) => {
+    const {db, stopPostgres} = await startPostgres();
+    
+    await createTable(db);
+    await db.upsert('t', 'id', {
+        id: 1,
+        x: 'a',
+    });
+    await db.upsert('t', 'id', {
+        id: 1,
+        x: 'b',
+    });
+    
+    const rows = await db.all('SELECT id, x FROM t');
+    
+    await stopPostgres();
+    
+    const expected = [{
+        id: 1,
+        x: 'b',
+    }];
+    
+    t.deepEqual(rows, expected);
+    t.end();
+});
+
+test('postgres: transaction: db calls inside use the transaction', async (t) => {
+    const {db, stopPostgres} = await startPostgres();
+    
+    await createTable(db);
+    await db.transaction(async () => {
+        await db.run(`INSERT INTO t (id, x) VALUES (1, 'inside')`);
+    });
+    
+    const rows = await db.all('SELECT x FROM t');
+    
+    await stopPostgres();
+    
+    const expected = [{
+        x: 'inside',
+    }];
+    
+    t.deepEqual(rows, expected);
+    t.end();
+});
+
+test('postgres: transaction: error rolls back', async (t) => {
+    const {db, stopPostgres} = await startPostgres();
+    
+    await createTable(db);
+    await tryToCatch(db.transaction, async () => {
+        await db.run(`INSERT INTO t (id, x) VALUES (1, 'inside')`);
+        throw Error('boom');
+    });
+    
+    const result = await db.all('SELECT x FROM t');
+    
+    await stopPostgres();
+    
+    const expected = [];
+    
+    t.deepEqual(result, expected);
+    t.end();
 });

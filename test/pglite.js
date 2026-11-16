@@ -1,4 +1,5 @@
 import {tryToCatch} from 'try-to-catch';
+import {stub} from 'supertape';
 import {createE2ETest} from '#test';
 import {createDb} from '../lib/db/pglite.js';
 
@@ -134,4 +135,54 @@ test('pglite: transaction commits', async ({transaction, get, exec, deepEqual}) 
 test('pglite: end does not throw', async ({notOk, end}) => {
     const [error] = await tryToCatch(end);
     await notOk(error);
+});
+
+test('pglite: transaction: db calls inside use the transaction', async ({transaction, run, get, exec, deepEqual}) => {
+    await exec('CREATE TABLE IF NOT EXISTS t (id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, x TEXT)');
+    await transaction(async () => {
+        await run('INSERT INTO t (x) VALUES (:x)', {
+            x: 'inside',
+        });
+    });
+    
+    const row = await get('SELECT x FROM t');
+    
+    const expected = {
+        x: 'inside',
+    };
+    
+    deepEqual(row, expected);
+});
+
+test('pglite: transaction: error rolls back', async ({transaction, run, all, exec, deepEqual}) => {
+    await exec('CREATE TABLE IF NOT EXISTS t (id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, x TEXT)');
+    await tryToCatch(transaction, async () => {
+        await run('INSERT INTO t (x) VALUES (:x)', {
+            x: 'inside',
+        });
+        throw Error('boom');
+    });
+    
+    const rows = await all('SELECT x FROM t');
+    const expected = [];
+    
+    deepEqual(rows, expected);
+});
+
+test('pglite: transaction: db is usable after', async ({transaction, run, get, exec, deepEqual}) => {
+    await exec('CREATE TABLE IF NOT EXISTS t (id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, x TEXT)');
+    await transaction(
+        stub().resolves(),
+    );
+    await run('INSERT INTO t (x) VALUES (:x)', {
+        x: 'after',
+    });
+    
+    const row = await get('SELECT x FROM t');
+    
+    const expected = {
+        x: 'after',
+    };
+    
+    deepEqual(row, expected);
 });
