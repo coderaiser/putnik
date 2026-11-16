@@ -265,6 +265,23 @@ const [, places] = await putnik(targetFile, 'const a = "hello"', {
 });
 ```
 
+### Project plugins
+
+A plugin with the line `-- @scope project` runs one time for all files. The loader does not add `file = :file` to its queries. `@select` MUST return a column named `file`. Each row gives one place. The params of `@report` and `@fix` are the columns of the row.
+
+```sql
+-- @scope project
+
+-- @report
+SELECT 'Found const' AS message;
+
+-- @select
+SELECT file, id FROM VariableDeclaration WHERE kind = 'const';
+
+-- @fix
+UPDATE VariableDeclaration SET kind = 'let' WHERE id = :id;
+```
+
 ## License
 
 MIT
