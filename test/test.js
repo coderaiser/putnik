@@ -7,7 +7,9 @@ import {
 
 const createLint = (options) => async (rawSource, {fix}) => {
     const name = 'fixture.js';
-    const db = await parse(name, rawSource);
+    const db = await parse(name, rawSource, {
+        bindings: options.plugins.some(([, plugin]) => plugin.needsScope),
+    });
     
     const places = await transform(name, db, {
         ...options,

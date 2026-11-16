@@ -46,7 +46,9 @@ export const run = async (overrides = {}) => {
     for (const file of filePaths)
         sources.push(await fs.readFile(file));
     
-    const db = await parse(filePaths, sources);
+    const db = await parse(filePaths, sources, {
+        bindings: plugins.some(([, plugin]) => plugin.needsScope),
+    });
     
     const places = await transformAll(filePaths, db, {
         fix,

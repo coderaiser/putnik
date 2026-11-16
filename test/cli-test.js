@@ -372,3 +372,30 @@ test('putnik: cli: run: preserves inline comment on fix', async (t) => {
     t.match(result, '// inline');
     t.end();
 });
+
+test('putnik: cli: run: plugin that needs scope sees Binding', async (t) => {
+    const dir = await createDir();
+    const name = join(dir, 'a.js');
+    
+    await writeFile(name, 'const a = 1;\n');
+    
+    const {places} = await run({
+        pattern: join(dir, '*.js'),
+        fix: false,
+        plugins: [
+            ['binding', {
+                needsScope: true,
+                select: `SELECT id FROM Binding WHERE file = :file`,
+                report: `SELECT 'Binding found' AS message, 1 AS line, 0 AS col`,
+            }],
+        ],
+    });
+    
+    await rm(dir, {
+        recursive: true,
+        force: true,
+    });
+    
+    t.equal(places.length, 1);
+    t.end();
+});

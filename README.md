@@ -265,6 +265,17 @@ const [, places] = await putnik(targetFile, 'const a = "hello"', {
 });
 ```
 
+### Scope tables
+
+The tables `Binding` and `Reference` hold the scope analysis of Babel. They are empty unless `parse(file, source, {bindings: true})` is called. The CLI and `createTest` turn them on when a plugin reads `Binding` or `Reference` (`plugin.needsScope`).
+
+| Table | Columns |
+|---|---|
+| `Binding` | `id`, `file`, `name`, `kind`, `scope_id`, `node_type`, `node_id`, `declaration_type`, `declaration_id`, `constant`, `start_line`, `start_col`, `end_line`, `end_col` |
+| `Reference` | `id`, `file`, `binding_id`, `node_type`, `node_id`, `is_write` |
+
+`kind` is the Babel kind: `var`, `let`, `const`, `param`, `module`, `hoisted`, `local`. `node_type` and `node_id` point to the `Identifier` row. A global name has no binding.
+
 ### Project plugins
 
 A plugin with the line `-- @scope project` runs one time for all files. The loader does not add `file = :file` to its queries. `@select` MUST return a column named `file`. Each row gives one place. The params of `@report` and `@fix` are the columns of the row.
