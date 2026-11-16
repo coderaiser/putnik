@@ -619,9 +619,12 @@ test('putnik: cli: runPrint: writes only the changed files', async (t) => {
     const result = await readFile(join(dir, 'b.js'), 'utf8');
     
     await remove();
-    const expected = [[
-        join(dir, 'a.js'),
-    ], 'bar(  1 );\n'];
+    const expected = [
+        [
+            join(dir, 'a.js'),
+        ],
+        'bar(  1 );\n',
+    ];
     
     t.deepEqual([files, result], expected);
     t.end();
