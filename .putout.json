@@ -1,6 +1,9 @@
 {
     "rules": {
-        "putout": "on"
+        "putout": "on",
+        "optional-chaining/convert-logical-to-optional": "off",
+        "optional-chaining/convert-logical-assign-to-optional": "off",
+        "optional-chaining/convert-optional-to-logical": "on"
     },
     "plugins": ["putnik"],
     "ignore": ["example", "bench"]
