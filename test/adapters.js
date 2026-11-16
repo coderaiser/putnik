@@ -53,6 +53,30 @@ const checkRoundTrip = async (start) => {
     return printed.get('/p/a.js');
 };
 
+const checkSync = async (start) => {
+    const {database, stop} = await start();
+    const names = ['/p/a.js'];
+    const sources = ['const a = 1;\n'];
+    
+    const first = await parse(names, sources, {
+        database,
+    });
+    
+    await first.run(`UPDATE Identifier SET name = 'zzz'`);
+    await first.end();
+    
+    const second = await parse(names, sources, {
+        database,
+    });
+    
+    const rows = await second.all('SELECT name FROM Identifier');
+    
+    await second.end();
+    await stop();
+    
+    return rows;
+};
+
 const checkFind = async (start) => {
     const {database, stop} = await start();
     const db = await parse('/p/a.js', 'debugger;\n', {
@@ -82,6 +106,16 @@ test('adapters: postgres: round trip', async (t) => {
     const result = await checkRoundTrip(startPg);
     
     t.equal(result, 'const a = 1;\n');
+    t.end();
+});
+
+test('adapters: pglite: second parse keeps rows', async (t) => {
+    const result = await checkSync(startPglite);
+    const expected = [{
+        name: 'zzz',
+    }];
+    
+    t.deepEqual(result, expected);
     t.end();
 });
 
