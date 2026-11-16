@@ -246,6 +246,7 @@ The rules are in `lib/plugins/`. The names are the names of the rules of Putout.
 | `remove-duplicate-keys` | file | no | Keys: name, string, `[a.b]`, spread of a name |
 | `merge-duplicate-imports` | file | no | Type and value imports are merged one by one. A namespace import and two default imports are not merged. A comment of a removed import stays on the next node |
 | `convert-const-to-let` | file | yes | Skips `export const` and `declare const` |
+| `convert-let-to-const` | file | yes | Skips `declare let`, a `let` without init, a declaration where one declarator is reassigned, and a loop counter |
 | `remove-unused-variables` | file | yes | Only a declarator with an identifier |
 | `remove-unused-exports` | project | no | Only `export const`, `export function`, `export class`, `export {a}`, and `export default function a`. Types are kept. A destructuring export is kept. Packages that other projects import MUST NOT use this rule: it removes the exports that only other projects use |
 
