@@ -11,6 +11,7 @@ import {
 import {startPostgres} from './lib/start-postgres.js';
 
 const removeDebugger = loadSqlPlugin(new URL('../lib/plugins/remove-debugger.sql', import.meta.url).pathname);
+const removeUnusedExports = loadSqlPlugin(new URL('../lib/plugins/remove-unused-exports.sql', import.meta.url).pathname);
 
 const startPglite = async () => {
     const dir = await mkdtemp(join(tmpdir(), 'putnik-pglite-'));
@@ -95,6 +96,36 @@ const checkFind = async (start) => {
     return places.map(({file}) => file);
 };
 
+const checkEntries = async (start) => {
+    const {database, stop} = await start();
+    const names = [
+        '/p/package.json',
+        '/p/a.js',
+        '/p/b.js',
+    ];
+    
+    const sources = [
+        '{"main": "./a.js"}\n',
+        'export const a = 1;\n',
+        'export const b = 1;\n',
+    ];
+    
+    const db = await parse(names, sources, {
+        database,
+    });
+    
+    const places = await transformAll(names, db, {
+        plugins: [
+            ['remove-unused-exports', removeUnusedExports],
+        ],
+    });
+    
+    await db.end();
+    await stop();
+    
+    return places.map(({file}) => file);
+};
+
 test('adapters: pglite: round trip', async (t) => {
     const result = await checkRoundTrip(startPglite);
     
@@ -130,6 +161,22 @@ test('adapters: pglite: find reports a place', async (t) => {
 test('adapters: postgres: find reports a place', async (t) => {
     const result = await checkFind(startPg);
     const expected = ['/p/a.js'];
+    
+    t.deepEqual(result, expected);
+    t.end();
+});
+
+test('adapters: pglite: entry keeps exports', async (t) => {
+    const result = await checkEntries(startPglite);
+    const expected = ['/p/b.js'];
+    
+    t.deepEqual(result, expected);
+    t.end();
+});
+
+test('adapters: postgres: entry keeps exports', async (t) => {
+    const result = await checkEntries(startPg);
+    const expected = ['/p/b.js'];
     
     t.deepEqual(result, expected);
     t.end();

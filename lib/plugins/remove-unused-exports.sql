@@ -40,6 +40,7 @@ WHERE export_declaration.source_resolved IS NULL
                     AND id_node.parent_field = 'id'
             )
     )
+    AND NOT EXISTS (SELECT 1 FROM Entry WHERE Entry.file = export_declaration.file)
     AND NOT EXISTS (
         SELECT 1 FROM module_imports usage
         WHERE usage.target_file = export_declaration.file
@@ -79,6 +80,7 @@ JOIN Identifier exported_name
     AND exported_name.parent_type = 'ExportSpecifier'
     AND exported_name.parent_field = 'exported'
 WHERE export_declaration.source_resolved IS NULL
+    AND NOT EXISTS (SELECT 1 FROM Entry WHERE Entry.file = specifier.file)
     AND NOT EXISTS (
         SELECT 1 FROM module_imports usage
         WHERE usage.target_file = specifier.file
@@ -117,6 +119,7 @@ WHERE exported.type IN ('FunctionDeclaration', 'ClassDeclaration')
             AND id_node.parent_id = exported.id
             AND id_node.parent_field = 'id'
     )
+    AND NOT EXISTS (SELECT 1 FROM Entry WHERE Entry.file = default_declaration.file)
     AND NOT EXISTS (
         SELECT 1 FROM module_imports usage
         WHERE usage.target_file = default_declaration.file
