@@ -5,8 +5,8 @@ import {
     print,
 } from '../lib/putnik.js';
 
-const createLint = (options) => async (rawSource, {fix}) => {
-    const name = 'fixture.js';
+const createLint = ({extension, ...options}) => async (rawSource, {fix}) => {
+    const name = `fixture.${extension}`;
     const db = await parse(name, rawSource, {
         bindings: options.plugins.some(([, plugin]) => plugin.needsScope),
     });
@@ -21,12 +21,15 @@ const createLint = (options) => async (rawSource, {fix}) => {
     return [processedSource, places];
 };
 
-export const createTest = (url, options) => createProcessorTest(url, {
+export const createTest = (url, {extension = 'js', ...options}) => createProcessorTest(url, {
     ...options,
-    extension: 'js',
+    extension,
     processorRunners: [{
         files: ['*'],
         isMatch: () => true,
-        lint: createLint(options),
+        lint: createLint({
+            ...options,
+            extension,
+        }),
     }],
 });
