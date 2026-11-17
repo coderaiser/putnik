@@ -1,3 +1,33 @@
+2026.11.18, v1.6.0
+
+fix:
+- 03c0bca putnik: apply-is-nan: check parent_type, support member, call, this
+
+feature:
+- 52c6f47 sweep: add
+- ef6e72f putnik: cli: parse, find, transform, print, .putnik.toml
+- 31af1b6 putnik: convert-let-to-const
+- b2e19ef putnik: entries: read from package.json files in database
+- f8c03bc putnik: parse: sync database by file hash
+- 32baa48 putnik: json, toml: add processors
+- 99a139f putnik: postgres, pglite: portable sql
+- cc945f7 putnik: cli: parse TypeScript files by default
+- 3dbe0cc putnik: remove-unused-exports
+- bb2cc39 putnik: source_resolved of imports, exports, import(), require()
+- 5684646 putnik: remove-unused-variables
+- 09103a1 putnik: convert-const-to-let: convert only when reassigned
+- 62bd7ec putnik: merge-duplicate-imports
+- e16788b putnik: remove-duplicate-keys
+- 1a118d2 putnik: remove-empty-block
+- 9ba036f putnik: remove-console
+- b239886 putnik: remove-debugger
+- 6e42d89 putnik: Binding and Reference tables
+- 93f798a putnik: TypeScript: columns and round trip
+- 4a323bc putnik: parse TypeScript by file extension
+- c5285d4 putnik: @scope project
+- 1289205 putnik: report every match, add file
+- 5defc78 putnik: nodes view
+
 2026.11.14, v1.5.3
 
 fix:

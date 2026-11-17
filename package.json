@@ -1,6 +1,6 @@
 {
   "name": "putnik",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "type": "module",
   "description": "parse JavaScript to SQL",
   "main": "lib/putnik.js",
