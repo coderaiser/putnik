@@ -11,7 +11,7 @@ JOIN ImportDeclaration dst
     ON dst.file = src.file
     AND dst.source_value = src.source_value
     AND dst.id != src.id
-    AND dst.start_line * 100000 + dst.start_col < src.start_line * 100000 + src.start_col
+    AND (dst.start_line, dst.start_col) < (src.start_line, src.start_col)
 WHERE NOT EXISTS (
         SELECT 1 FROM ImportNamespaceSpecifier namespace
         WHERE namespace.parent_type = 'ImportDeclaration'
@@ -21,7 +21,7 @@ WHERE NOT EXISTS (
         SELECT 1 FROM ImportDeclaration earlier
         WHERE earlier.file = dst.file
             AND earlier.source_value = dst.source_value
-            AND earlier.start_line * 100000 + earlier.start_col < dst.start_line * 100000 + dst.start_col
+            AND (earlier.start_line, earlier.start_col) < (dst.start_line, dst.start_col)
             AND NOT EXISTS (
                 SELECT 1 FROM ImportNamespaceSpecifier namespace
                 WHERE namespace.parent_type = 'ImportDeclaration'

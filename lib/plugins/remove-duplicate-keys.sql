@@ -13,7 +13,7 @@ WHERE EXISTS (
         AND last.parent_type = first.parent_type
         AND last.parent_id = first.parent_id
         AND last.key = first.key
-        AND last.start_line * 100000 + last.start_col > first.start_line * 100000 + first.start_col
+        AND (last.start_line, last.start_col) > (first.start_line, first.start_col)
 );
 
 -- @fix
