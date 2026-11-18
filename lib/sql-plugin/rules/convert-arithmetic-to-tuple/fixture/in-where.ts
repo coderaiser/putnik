@@ -1,0 +1,1 @@
+section('@select', select(id, from(Identifier as 'first', join(Identifier as 'last', on(last.parent_id === first.parent_id)), where(last.start_line * 100000 + last.start_col > first.start_line * 100000 + first.start_col))));
