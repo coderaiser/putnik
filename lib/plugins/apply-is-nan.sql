@@ -32,21 +32,9 @@ WHERE id = :id;
 INSERT INTO CallExpression (file, parent_id, parent_type, parent_field)
 VALUES (:file, :parent_id, :parent_type, :parent_field)
 RETURNING id AS call_id;
-UPDATE Identifier
+UPDATE nodes
 SET parent_id = :call_id, parent_type = 'CallExpression', parent_field = 'arguments'
-WHERE id = :left_id AND :left_type = 'Identifier';
-UPDATE MemberExpression
-SET parent_id = :call_id, parent_type = 'CallExpression', parent_field = 'arguments'
-WHERE id = :left_id AND :left_type = 'MemberExpression';
-UPDATE OptionalMemberExpression
-SET parent_id = :call_id, parent_type = 'CallExpression', parent_field = 'arguments'
-WHERE id = :left_id AND :left_type = 'OptionalMemberExpression';
-UPDATE ThisExpression
-SET parent_id = :call_id, parent_type = 'CallExpression', parent_field = 'arguments'
-WHERE id = :left_id AND :left_type = 'ThisExpression';
-UPDATE CallExpression
-SET parent_id = :call_id, parent_type = 'CallExpression', parent_field = 'arguments'
-WHERE id = :left_id AND :left_type = 'CallExpression';
+WHERE id = :left_id AND type = :left_type;
 INSERT INTO MemberExpression (file, parent_id, parent_type, parent_field)
 VALUES (:file, :call_id, 'CallExpression', 'callee')
 RETURNING id AS member_id;

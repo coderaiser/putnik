@@ -127,15 +127,9 @@ WHERE exported.type IN ('FunctionDeclaration', 'ClassDeclaration')
     );
 
 -- @fix
-UPDATE VariableDeclaration
+UPDATE nodes
 SET parent_id = :parent_id, parent_type = :parent_type, parent_field = :parent_field
-WHERE file = :file AND id = :declaration_id AND :declaration_type = 'VariableDeclaration' AND :kind != 'specifier';
-UPDATE FunctionDeclaration
-SET parent_id = :parent_id, parent_type = :parent_type, parent_field = :parent_field
-WHERE file = :file AND id = :declaration_id AND :declaration_type = 'FunctionDeclaration' AND :kind != 'specifier';
-UPDATE ClassDeclaration
-SET parent_id = :parent_id, parent_type = :parent_type, parent_field = :parent_field
-WHERE file = :file AND id = :declaration_id AND :declaration_type = 'ClassDeclaration' AND :kind != 'specifier';
+WHERE file = :file AND id = :declaration_id AND type = :declaration_type AND :kind != 'specifier';
 DELETE FROM ExportNamedDeclaration
 WHERE file = :file AND id = :export_id AND :kind = 'declaration';
 DELETE FROM ExportDefaultDeclaration
