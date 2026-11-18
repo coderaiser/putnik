@@ -1,3 +1,8 @@
+2026.11.18, v1.7.0
+
+feature:
+- 089a9be putnik: sweep: mark the file on any DELETE
+
 2026.11.18, v1.6.0
 
 fix:
