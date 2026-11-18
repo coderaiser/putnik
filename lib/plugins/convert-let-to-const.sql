@@ -24,18 +24,9 @@ WHERE declaration.kind = 'let'
             AND declaration.parent_type NOT IN ('ForInStatement', 'ForOfStatement')
     )
     AND NOT EXISTS (
-        SELECT 1
-        FROM VariableDeclarator declarator
-        JOIN Binding binding
-            ON binding.file = declarator.file
-            AND binding.declaration_type = 'VariableDeclarator'
-            AND binding.declaration_id = declarator.id
-        JOIN Reference reference
-            ON reference.binding_id = binding.id
-            AND reference.is_write = 1
-        WHERE declarator.file = declaration.file
-            AND declarator.parent_type = 'VariableDeclaration'
-            AND declarator.parent_id = declaration.id
+        SELECT 1 FROM reassigned_declarations reassigned
+        WHERE reassigned.file = declaration.file
+            AND reassigned.id = declaration.id
     );
 
 -- @fix
