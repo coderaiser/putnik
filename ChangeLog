@@ -1,3 +1,15 @@
+2026.11.18, v1.8.0
+
+fix:
+- f6c1057 putnik: views: calls: add parent_type and parent_field
+
+feature:
+- 5e7be71 putnik: sql-plugin: convert-arithmetic-to-tuple: add
+- dbe979e putnik: sql-plugin: check-typed-update-has-list: add
+- 8139bdd putnik: sql-plugin: expand-typed-update: add
+- 31f0d48 putnik: sql-plugin: add-file-to-join: add
+- fd76d94 putnik: sql-plugin: add-parent-type-to-join: add
+
 2026.11.18, v1.7.0
 
 feature:
