@@ -9,7 +9,7 @@ SELECT
     statement.parent_field,
     CASE
         WHEN statement.parent_field IN ('body', 'consequent')
-            AND statement.parent_type IN ('Program', 'BlockStatement', 'StaticBlock', 'TSModuleBlock', 'SwitchCase')
+            AND statement.parent_type IN (SELECT parent_type FROM list_parents)
         THEN 1
         ELSE 0
     END AS in_list
